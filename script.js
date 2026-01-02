@@ -2,7 +2,6 @@
 // 1. CONFIGURATION
 // ============================================
 // Enter your phone number (Country Code + Number). No + sign.
-// Example: 15550000000 (USA), 639123456789 (Philippines)
 const ADMIN_PHONE = "1234567890"; 
 
 // Password to access admin.html
@@ -11,10 +10,38 @@ const ADMIN_PASSWORD = "admin123";
 // ============================================
 // 2. STATE & DATA LOADING
 // ============================================
-// Default products if store is empty
+// Enhanced sample products
 const defaultProducts = [
-    { id: 1, name: "White Sneakers", price: 49.99, img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300" },
-    { id: 2, name: "Leather Bag", price: 89.50, img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300" }
+    { 
+        id: 1, 
+        name: "Canvas Tote Bag", 
+        price: 15.00, 
+        img: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=300&q=80" 
+    },
+    { 
+        id: 2, 
+        name: "Ceramic Coffee Mug", 
+        price: 12.50, 
+        img: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=300&q=80" 
+    },
+    { 
+        id: 3, 
+        name: "Handmade Bracelet", 
+        price: 8.99, 
+        img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&w=300&q=80" 
+    },
+    { 
+        id: 4, 
+        name: "Leather Messenger Bag", 
+        price: 45.00, 
+        img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80" 
+    },
+    { 
+        id: 5, 
+        name: "Travel Coffee Tumbler", 
+        price: 22.00, 
+        img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=300&q=80" 
+    }
 ];
 
 // Load from LocalStorage
@@ -55,13 +82,18 @@ function checkLogin() {
         sessionStorage.setItem('isAdminLoggedIn', 'true'); // Save session
         showAdminDashboard();
     } else {
-        errorMsg.style.display = 'block';
+        errorMsg.style.display = 'block'; // Show error message
     }
 }
 
 function showAdminDashboard() {
     document.getElementById('login-view').style.display = 'none';
-    document.getElementById('admin-view').style.display = 'block';
+    
+    // Remove the 'hidden' class to show the dashboard
+    const adminView = document.getElementById('admin-view');
+    adminView.classList.remove('hidden');
+    adminView.style.display = 'block'; // Ensure it displays
+    
     renderAdminProducts();
     renderAllOrders();
 }
@@ -81,7 +113,7 @@ function renderCustomerProducts() {
     grid.innerHTML = "";
     
     if(products.length === 0) {
-        grid.innerHTML = "<p>No products available at the moment.</p>";
+        grid.innerHTML = "<p class='loading-text'>No products available at the moment.</p>";
         return;
     }
 
@@ -211,9 +243,11 @@ function addProduct() {
         localStorage.setItem('products', JSON.stringify(products));
         alert("Product Added Successfully!");
         renderAdminProducts();
-        // Clear inputs
+        
+        // Clear all inputs
         document.getElementById('p-name').value = "";
         document.getElementById('p-price').value = "";
+        document.getElementById('p-img').value = "";
     } else {
         alert("Please enter Name and Price.");
     }
