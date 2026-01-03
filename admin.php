@@ -24,17 +24,14 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Check Access
 $isLoggedIn = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 
-// Handle Add Product
 if ($isLoggedIn && isset($_POST['add_product'])) {
     addProduct($_POST['name'], $_POST['price'], $_FILES['img']);
     header("Location: admin.php");
     exit;
 }
 
-// Handle Delete Product
 if ($isLoggedIn && isset($_GET['delete_product'])) {
     deleteProduct($_GET['delete_product']);
     header("Location: admin.php");
@@ -49,7 +46,6 @@ $orders = getOrders();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store Admin Panel</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -144,11 +140,11 @@ $orders = getOrders();
                             <tr>
                                 <td>#<?= $o['id'] ?></td>
                                 <td>
-                                    <strong><?= $o['customerName'] ?></strong><br>
+                                    <strong><?= $o['customer_name'] ?></strong><br>
                                     <small><?= $o['contact'] ?></small><br>
                                     <small><?= $o['address'] ?></small>
                                 </td>
-                                <td><?= $o['productName'] ?></td>
+                                <td><?= $o['product_name'] ?></td>
                                 <td><span class="status-badge status-<?= $o['status'] ?>"><?= $o['status'] ?></span></td>
                             </tr>
                             <?php endforeach; ?>
@@ -156,10 +152,8 @@ $orders = getOrders();
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
     <?php endif; ?>
-
 </body>
 </html>

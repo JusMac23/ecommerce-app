@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $order = addOrder($_POST['product_id'], $_POST['name'], $_POST['phone'], $_POST['address']);
     
     // Generate WhatsApp Link
+    // Note: $order comes from addOrder() which manually returns 'productName', so this keys remains valid here.
     $msg = "Hello, I want to order:%0a*Product:* " . urlencode($order['productName']) . 
            "%0a*Name:* " . urlencode($order['customerName']) . 
            "%0a*Address:* " . urlencode($order['address']) . 
@@ -95,7 +96,7 @@ $orders = getOrders();
                             <?php foreach ($orders as $o): ?>
                             <tr>
                                 <td>#<?= $o['id'] ?></td>
-                                <td><?= $o['productName'] ?></td>
+                                <td><?= $o['product_name'] ?></td>
                                 <td><span class="status-badge status-<?= $o['status'] ?>"><?= $o['status'] ?></span></td>
                                 <td>
                                     <?php if ($o['status'] === 'Pending'): ?>

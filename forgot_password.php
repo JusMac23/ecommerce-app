@@ -1,22 +1,25 @@
 <?php
+session_start();
 require 'functions.php';
 
-$message = "";
-$resetLink = "";
+$error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
+    $phone = $_POST['phone'];
     
-    // Generate Token
-    $token = generateResetToken($username);
+    // 1. Generate OTP
+    $otp = requestOTP($phone);
 
-    if ($token) {
-        // Since we are on localhost, we cannot easily send emails.
-        // We will display the link directly on screen for testing.
-        $message = "Recovery mode initiated.";
-        $resetLink = "reset_password.php?token=" . $token;
+    if ($otp) {
+        // 2. Store Phone in Session so reset_password.php knows who we are
+        $_SESSION['reset_phone'] = $phone;
+        
+        // 3. Redirect to verification page
+        // We put the OTP in the URL strictly for testing so you can see it
+        header("Location: reset_password.php?simulated_otp=" . $otp);
+        exit;
     } else {
-        $message = "Username not found.";
+        $error = "Contact number not found.";
     }
 }
 ?>
@@ -32,25 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-container">
         <div class="login-box">
             <h2>Recovery</h2>
-            <p>Enter your username to reset password.</p>
+            <p>Enter your registered contact number.</p>
             
             <form method="POST">
-                <input type="text" name="username" placeholder="Enter Username" required>
-                <button type="submit" class="btn-primary w-100">Request Reset</button>
+                <input type="text" name="phone" placeholder="e.g. 09123456789" required>
+                <button type="submit" class="btn-primary w-100">Send OTP Code</button>
             </form>
 
-            <?php if ($message): ?>
-                <p class="error-msg" style="display:block; color: #333; background: #e2e8f0; padding: 10px; border-radius: 6px; margin-top:15px;">
-                    <?= $message ?>
-                </p>
-            <?php endif; ?>
-
-            <?php if ($resetLink): ?>
-                <div style="margin-top: 15px; padding: 15px; background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px;">
-                    <strong>Simulated Email:</strong><br>
-                    <p style="font-size: 0.9rem; margin: 5px 0;">Click below to reset your password:</p>
-                    <a href="<?= $resetLink ?>" class="btn-confirm" style="display:block; text-align:center; text-decoration:none; margin-top:5px;">Reset Password Now</a>
-                </div>
+            <?php if ($error): ?>
+                <p class="error-msg" style="display:block;"><?= $error ?></p>
             <?php endif; ?>
             
             <br>

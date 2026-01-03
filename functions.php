@@ -2,7 +2,7 @@
 // ==========================================
 // 1. CONFIGURATION
 // ==========================================
-define('ADMIN_PHONE', '1234567890'); 
+define('ADMIN_PHONE', '09458739896'); 
 define('UPLOAD_DIR', 'uploads/'); 
 
 // Database Credentials
@@ -11,10 +11,7 @@ define('DB_NAME', 'souvenir_shop');
 define('DB_USER', 'root');
 define('DB_PASS', 'CD@it1432'); 
 
-// Ensure upload directory exists
-if (!file_exists(UPLOAD_DIR)) {
-    mkdir(UPLOAD_DIR, 0777, true);
-}
+if (!file_exists(UPLOAD_DIR)) { mkdir(UPLOAD_DIR, 0777, true); }
 
 function getDB() {
     static $pdo = null;
@@ -32,7 +29,7 @@ function getDB() {
 }
 
 // ==========================================
-// 2. AUTHENTICATION & PASSWORD RESET
+// 2. AUTHENTICATION & OTP
 // ==========================================
 
 function checkAdminLogin($username, $password) {
@@ -47,67 +44,62 @@ function checkAdminLogin($username, $password) {
     return false;
 }
 
-// Ensure Admin Table Exists (Updated with new columns)
+// Ensure Admin Exists
 function ensureAdminTableExists() {
     $pdo = getDB();
-    // Logic to create table if it doesn't exist...
     $pdo->exec("CREATE TABLE IF NOT EXISTS admins (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
-        reset_token VARCHAR(255) NULL,
-        reset_expires DATETIME NULL
+        contact_number VARCHAR(20) NULL,
+        otp_code VARCHAR(6) NULL,
+        otp_expires DATETIME NULL
     )");
 
     $stmt = $pdo->query("SELECT count(*) FROM admins");
     if ($stmt->fetchColumn() == 0) {
         $defaultPass = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO admins (username, password) VALUES ('admin', ?)");
+        // NOTE: Default phone is 09123456789. Change in DB if needed.
+        $stmt = $pdo->prepare("INSERT INTO admins (username, password, contact_number) VALUES ('admin', ?, '09123456789')");
         $stmt->execute([$defaultPass]);
     }
 }
 ensureAdminTableExists();
 
-// NEW: Generate Token for Reset
-function generateResetToken($username) {
+// Request OTP via Phone
+function requestOTP($phone) {
     $pdo = getDB();
     
-    // Check if user exists
-    $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
-    $stmt->execute([$username]);
+    // Check if phone exists
+    $stmt = $pdo->prepare("SELECT id FROM admins WHERE contact_number = ?");
+    $stmt->execute([$phone]);
     $user = $stmt->fetch();
 
     if ($user) {
-        // Generate random token
-        $token = bin2hex(random_bytes(32));
-        // Set expiry (1 hour from now)
-        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $otp = rand(100000, 999999);
+        $expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-        // Update DB
-        $update = $pdo->prepare("UPDATE admins SET reset_token = ?, reset_expires = ? WHERE username = ?");
-        $update->execute([$token, $expiry, $username]);
+        $update = $pdo->prepare("UPDATE admins SET otp_code = ?, otp_expires = ? WHERE contact_number = ?");
+        $update->execute([$otp, $expiry, $phone]);
 
-        return $token; // Return token to display/email
+        return $otp; 
     }
     return false;
 }
 
-// NEW: Process the Password Reset
-function resetAdminPassword($token, $newPassword) {
+// Verify OTP and Reset Password
+function verifyResetOTP($phone, $otp, $newPassword) {
     $pdo = getDB();
     $now = date('Y-m-d H:i:s');
 
-    // Find user with this token and ensure it hasn't expired
-    $stmt = $pdo->prepare("SELECT id FROM admins WHERE reset_token = ? AND reset_expires > ?");
-    $stmt->execute([$token, $now]);
+    $stmt = $pdo->prepare("SELECT id FROM admins WHERE contact_number = ? AND otp_code = ? AND otp_expires > ?");
+    $stmt->execute([$phone, $otp, $now]);
     $user = $stmt->fetch();
 
     if ($user) {
-        // Hash new password
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
         
-        // Update password and clear token
-        $update = $pdo->prepare("UPDATE admins SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?");
+        $update = $pdo->prepare("UPDATE admins SET password = ?, otp_code = NULL, otp_expires = NULL WHERE id = ?");
         $update->execute([$newHash, $user['id']]);
         
         return true;
@@ -116,7 +108,7 @@ function resetAdminPassword($token, $newPassword) {
 }
 
 // ==========================================
-// 3. PRODUCT FUNCTIONS
+// 3. PRODUCT LOGIC
 // ==========================================
 
 function getProducts() {
@@ -134,11 +126,9 @@ function addProduct($name, $price, $file) {
         $fileName = $file['name'];
         $newFileName = time() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "", basename($fileName));
         $dest_path = UPLOAD_DIR . $newFileName;
-
-        $allowedfileExtensions = array('jpg', 'gif', 'png', 'jpeg', 'webp');
-        $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-        if (in_array($fileExtension, $allowedfileExtensions)) {
+        
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg', 'gif', 'png', 'jpeg', 'webp'])) {
             if(move_uploaded_file($fileTmpPath, $dest_path)) {
                 $imagePath = $dest_path; 
             }
@@ -158,13 +148,12 @@ function deleteProduct($id) {
     if($product && file_exists($product['img']) && strpos($product['img'], 'uploads/') !== false) {
         unlink($product['img']); 
     }
-
     $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
     $stmt->execute([$id]);
 }
 
 // ==========================================
-// 4. ORDER FUNCTIONS
+// 4. ORDER LOGIC
 // ==========================================
 
 function getOrders() {
@@ -180,16 +169,10 @@ function addOrder($productId, $customerName, $phone, $address) {
     $product = $stmt->fetch();
     $pName = $product ? $product['name'] : "Unknown Product";
 
-    $sql = "INSERT INTO orders (product_name, customer_name, contact, address, status) VALUES (?, ?, ?, ?, 'Pending')";
-    $stmtInsert = $pdo->prepare($sql);
+    $stmtInsert = $pdo->prepare("INSERT INTO orders (product_name, customer_name, contact, address, status) VALUES (?, ?, ?, ?, 'Pending')");
     $stmtInsert->execute([$pName, htmlspecialchars($customerName), htmlspecialchars($phone), htmlspecialchars($address)]);
 
-    return [
-        'id' => $pdo->lastInsertId(),
-        'productName' => $pName,
-        'customerName' => htmlspecialchars($customerName),
-        'address' => htmlspecialchars($address)
-    ];
+    return ['id' => $pdo->lastInsertId(), 'productName' => $pName, 'customerName' => htmlspecialchars($customerName), 'address' => htmlspecialchars($address)];
 }
 
 function updateOrderStatus($id, $status) {
