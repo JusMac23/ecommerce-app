@@ -47,7 +47,7 @@ $orders = getOrders();
 <head>
     <meta charset="UTF-8">
     <title>Store Admin Panel</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="admin-body">
 
