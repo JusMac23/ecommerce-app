@@ -1,4 +1,5 @@
 <?php
+
 require 'functions.php';
 
 // Handle Order Submission
@@ -35,17 +36,18 @@ $orders = getOrders();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erwin Souvenir Shop</title>
+    <title>Souvenir Shop</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <nav>
-        <div class="logo">Erwin Souvenir Shop</div>
+        <div class="logo">Souvenir Shop</div>
         <div class="nav-links">
             <a href="#shop">Shop</a>
             <a href="#my-orders">Orders</a>
             <a href="#contact">Contact</a>
+
             <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
                 <a href="admin.php" class="admin-link">Manage Store</a>
             <?php else: ?>
@@ -123,7 +125,7 @@ $orders = getOrders();
             <div class="contact-card">
                 <p><strong>📞 Admin Phone:</strong> +<?= ADMIN_PHONE ?></p>
                 <p><strong>📧 Email:</strong> support@mystore.com</p>
-                <p><strong>📍 Location:</strong> Main Street, City Center</p>
+                <p><strong>📍 Location:</strong> Gracepark, Caloocan City</p>
             </div>
         </div>
     </div>

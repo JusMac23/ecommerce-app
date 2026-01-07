@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require 'functions.php';
 
 // Handle Login
@@ -46,7 +46,7 @@ $orders = getOrders();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Store Admin Panel</title>
+    <title>Admin Panel</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="admin-body">
