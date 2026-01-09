@@ -93,10 +93,10 @@ if ($currentUser) {
 </head>
 <body>
 
-    <nav>
+    <nav class="index-nav">
         <div class="logo">Souvenir Shop</div>
         
-        <div class="hamburger">
+        <div class="index-hamburger">
             <span></span>
             <span></span>
             <span></span>

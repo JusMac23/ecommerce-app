@@ -106,7 +106,7 @@ $orders = getOrders();
         <nav class="admin-nav">
             <div class="logo">Admin Panel</div>
             
-            <div class="hamburger">
+            <div class="admin-hamburger">
                 <span></span>
                 <span></span>
                 <span></span>

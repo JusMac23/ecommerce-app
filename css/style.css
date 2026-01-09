@@ -127,14 +127,28 @@ nav {
 }
 
 /* Hamburger Menu (Mobile) */
-.hamburger {
+.admin-hamburger {
     display: none;
     cursor: pointer;
     flex-direction: column;
     gap: 5px;
 }
 
-.hamburger span {
+.index-hamburger {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-hamburger span {
+    width: 25px;
+    height: 3px;
+    background: var(--text-main);
+    border-radius: 2px;
+}
+
+.index-hamburger span {
     width: 25px;
     height: 3px;
     background: var(--text-main);
@@ -530,9 +544,20 @@ button:active { transform: scale(0.98); }
    11. RESPONSIVE DESIGN
    ========================================= */
 @media (max-width: 768px) {
-    .hamburger { display: flex; }
+    .admin-hamburger { display: flex; }
+
+    .index-hamburger { display: flex; }
+
+    .admin-hamburger span {
+        background-color: #ffffff;
+    }
+
+    .index-hamburger span {
+        background-color: #1e293b;
+    }
 
     .nav-links {
+        color: #000;
         display: none; /* JS would toggle this */
         position: absolute;
         top: var(--header-height);
@@ -543,6 +568,9 @@ button:active { transform: scale(0.98); }
         padding: 20px;
         box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
+
+    .admin-nav .nav-links a { color: var(--text-main); }
+    .admin-nav .nav-links a:hover { color: var(--primary); }
     
     /* If you implement JS toggling class 'active' on nav-links */
     .nav-links.active { display: flex; }

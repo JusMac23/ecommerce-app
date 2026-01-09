@@ -1,14 +1,26 @@
-const hamburger = document.querySelector(".hamburger");
+const adminHamburger = document.querySelector(".admin-hamburger");
+const indexHamburger = document.querySelector(".index-hamburger");
 const navLinks = document.querySelector(".nav-links");
 
-if(hamburger && navLinks) {
-    hamburger.addEventListener("click", () => {
-        hamburger.classList.toggle("active");
+if(adminHamburger && navLinks) {
+    adminHamburger.addEventListener("click", () => {
+        adminHamburger.classList.toggle("active");
         navLinks.classList.toggle("active");
     });
 
     document.querySelectorAll(".nav-links a").forEach(n => n.addEventListener("click", () => {
-        hamburger.classList.remove("active");
+        adminHamburger.classList.remove("active");
+        navLinks.classList.remove("active");
+    }));
+}
+else if(indexHamburger && navLinks) {
+    indexHamburger.addEventListener("click", () => {
+        indexHamburger.classList.toggle("active");
+        navLinks.classList.toggle("active");
+    });
+
+    document.querySelectorAll(".nav-links a").forEach(n => n.addEventListener("click", () => {
+        indexHamburger.classList.remove("active");
         navLinks.classList.remove("active");
     }));
 }
