@@ -1,0 +1,131 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+
+/* Modal Content Box */
+.modal-content.product-expand {
+    background: white;
+    height: 70%; /* Tall modal */
+    width: 90%;
+    max-width: 600px; /* Reduced max-width for a better "mobile card" look */
+    border-radius: 12px;
+    padding: 0; /* Removed padding so image touches edges */
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    overflow: hidden; /* Keeps border radius on child elements */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal Layout - Vertical Stack */
+.modal-body {
+    display: flex;
+    flex-direction: column; /* This stacks image on top, text below */
+    height: 100%;
+    overflow-y: auto; /* Allows scrolling if description is long */
+}
+
+/* Image Column - The Big Top Section */
+.modal-img-col {
+    width: 100%;
+    height: 45%; /* Takes up top 45% of the card */
+    min-height: 300px; /* Ensures it stays big even on small screens */
+    flex-shrink: 0; /* Prevents image from shrinking */
+    background-color: #f4f4f4;
+}
+
+.modal-img-col img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures image covers the area without distortion */
+    display: block;
+}
+
+/* Info Column - The Bottom Section */
+.modal-info-col {
+    padding: 25px; /* Adds spacing around the text */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Typography & Buttons */
+.modal-info-col h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 28px; /* Larger Title */
+    color: #333;
+}
+
+.modal-info-col .price {
+    color: #e67e22;
+    font-size: 26px; /* Larger Price */
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.modal-info-col p {
+    color: #666;
+    line-height: 1.6;
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Button Container */
+.modal-actions {
+    margin-top: auto; /* Pushes button to the very bottom if space exists */
+}
+
+.btn-buy {
+    width: 100%; /* Full width button looks better in this layout */
+    padding: 15px;
+    background-color: #e67e22;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-buy:hover {
+    background-color: #d35400;
+}
+
+/* Close Button - Updated to be visible on top of image */
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.close-modal:hover {
+    background: white;
+    color: red;
+}

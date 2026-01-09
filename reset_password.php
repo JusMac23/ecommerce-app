@@ -1,6 +1,6 @@
 <?php
-session_start();
-require 'functions.php';
+
+require 'functions/functions.php';
 
 // FIX: If the session doesn't have the phone number, send them back to the start.
 // This prevents the "Invalid Request" error.

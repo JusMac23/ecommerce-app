@@ -1,663 +1,561 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap');
+
 /* =========================================
-   1. IMPORTS & VARIABLES
+   1. VARIABLES & RESET
    ========================================= */
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap');
-
 :root {
-    /* --- Palette: Slate (Dark) & Emerald (Green) --- */
-    --primary-900: #0f172a; /* Deep Backgrounds */
-    --primary-800: #1e293b; /* Cards/Nav in Dark Mode */
-    --primary-700: #334155;
-    
-    --accent-500: #10b981;  /* Primary Action */
-    --accent-600: #059669;  /* Hover Action */
-    --accent-glow: rgba(16, 185, 129, 0.4);
-
-    --text-main: #0f172a;
-    --text-body: #475569;
-    --text-muted: #94a3b8;
-    --text-light: #cbd5e1;
-
-    --bg-body: #f1f5f9;     /* Light Gray Background */
+    /* Color Palette */
+    --primary: #0d9488;       /* Teal - Main Brand Color */
+    --primary-dark: #0f766e;
+    --accent: #f59e0b;        /* Amber - Call to Actions */
+    --bg-body: #f1f5f9;       /* Light Slate - Background */
     --bg-card: #ffffff;
-    --border-light: #e2e8f0;
     
-    --danger: #ef4444;
-    --danger-soft: #fef2f2;
-    
-    /* --- Measurements --- */
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
-    --nav-height: 70px;
+    /* Text Colors */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #ffffff;
 
-    /* --- Shadows --- */
-    --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-    --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
-    --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-    --shadow-input: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* Status Colors */
+    --status-pending: #f59e0b;
+    --status-confirmed: #3b82f6;
+    --status-delivery: #8b5cf6;
+    --status-completed: #10b981;
+    --status-cancelled: #ef4444;
 
-    /* --- Animations --- */
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* Smooth elastic feel */
+    /* Spacing & Borders */
+    --radius: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --container-width: 1200px;
+    --header-height: 70px;
 }
 
-/* =========================================
-   2. GLOBAL RESET & TYPOGRAPHY
-   ========================================= */
-*, *::before, *::after {
-    box-sizing: border-box;
+* {
     margin: 0;
     padding: 0;
-}
-
-html {
-    scroll-behavior: smooth;
+    box-sizing: border-box;
 }
 
 body {
-    font-family: 'Figtree', sans-serif;
+    font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-body);
     color: var(--text-main);
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Headings */
-h1, h2, h3, h4, h5 {
-    color: var(--primary-900);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
+    padding-top: var(--header-height); /* Prevent content hiding behind fixed nav */
 }
 
 a {
     text-decoration: none;
     color: inherit;
-    transition: color 0.2s;
+    transition: 0.3s ease;
 }
 
+ul { list-style: none; }
+
 /* =========================================
-   3. NAVIGATION (Glassmorphism)
+   2. LAYOUT & UTILITIES
+   ========================================= */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.main-content {
+    min-height: 80vh;
+}
+
+.hidden { display: none !important; }
+
+.w-100, .btn-block { width: 100%; }
+
+/* =========================================
+   3. NAVIGATION
    ========================================= */
 nav {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    height: var(--nav-height);
-    padding: 0 5%;
+    background: var(--bg-card);
+    height: var(--header-height);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.5);
+    padding: 0 5%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     box-shadow: var(--shadow-sm);
 }
 
 .logo {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--primary-900);
-    letter-spacing: -0.03em;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .nav-links {
     display: flex;
-    gap: 32px;
     align-items: center;
+    gap: 25px;
 }
 
 .nav-links a {
+    font-weight: 500;
+    color: var(--text-main);
     font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-body);
-    position: relative;
 }
 
-.nav-links a:hover {
-    color: var(--primary-900);
+.nav-links a:hover, 
+.nav-links a.active {
+    color: var(--primary);
 }
 
-/* Interactive Link Underline (Dot) */
-.nav-links a:not(.admin-link)::after {
-    content: '';
-    position: absolute;
-    width: 5px; height: 5px;
-    background: var(--accent-500);
-    border-radius: 50%;
-    bottom: -8px; left: 50%;
-    transform: translateX(-50%) scale(0);
-    transition: transform 0.3s var(--ease-out);
-}
-.nav-links a:not(.admin-link):hover::after {
-    transform: translateX(-50%) scale(1);
-}
-
-/* Special Admin Link Button */
 .admin-link {
-    background: var(--primary-900);
-    color: white !important;
-    padding: 8px 18px;
-    border-radius: 50px;
-    font-size: 0.85rem !important;
-    transition: transform 0.2s var(--ease-out), box-shadow 0.2s !important;
+    border: 1px solid var(--primary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: var(--primary) !important;
 }
+
 .admin-link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3);
+    background: var(--primary);
+    color: white !important;
+}
+
+/* Hamburger Menu (Mobile) */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: var(--text-main);
+    border-radius: 2px;
 }
 
 /* =========================================
-   4. LAYOUT & HERO SECTION
+   4. HERO SECTION
    ========================================= */
-.main-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px;
-    min-height: calc(100vh - var(--nav-height));
-}
-
 .hero-section {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
     text-align: center;
-    padding: 80px 20px;
-    margin-bottom: 60px;
-    background-color: #fff;
-    /* Subtle Grid Pattern */
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.05) 0px, transparent 50%),
-        linear-gradient(#f8fafc 2px, transparent 2px), 
-        linear-gradient(90deg, #f8fafc 2px, transparent 2px);
-    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-    
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    animation: fadeIn 0.8s var(--ease-out);
+    padding: 60px 20px;
+    margin-bottom: 40px;
 }
 
 .hero-section h1 {
-    font-size: 3.5rem;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, var(--primary-900) 30%, var(--primary-700) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
 }
 
 .hero-section p {
-    font-size: 1.15rem;
-    color: var(--text-body);
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.container {
-    margin-bottom: 50px;
-}
-
-.container h2 {
-    font-size: 1.75rem;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.container h2::before {
-    content: '';
-    display: block;
-    width: 6px;
-    height: 24px;
-    background: var(--accent-500);
-    border-radius: 4px;
+    font-size: 1.1rem;
+    opacity: 0.9;
 }
 
 /* =========================================
-   5. PRODUCT GRID & CARDS
+   5. PRODUCTS (SHOP)
    ========================================= */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
 }
 
 .product-card {
     background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: all 0.3s var(--ease-out);
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #e2e8f0;
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
-    border-color: rgba(16, 185, 129, 0.2);
 }
 
 .product-card img {
     width: 100%;
-    height: 220px;
+    height: 200px;
     object-fit: cover;
-    background-color: #f1f5f9;
+    background: #f1f5f9;
 }
 
 .card-details {
-    padding: 24px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+    padding: 15px;
+    text-align: center;
 }
 
 .card-details h4 {
-    font-size: 1.15rem;
-    margin-bottom: 8px;
-    color: var(--primary-900);
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    color: var(--text-main);
 }
 
-.price {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--accent-600);
-    margin-bottom: 20px;
+.card-details .price {
     display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
 }
 
 /* =========================================
-   6. FORMS & INPUTS (Modernized)
-   ========================================= */
-input[type="text"],
-input[type="password"],
-input[type="number"],
-input[type="email"],
-select,
-textarea {
-    width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    font-family: inherit;
-    font-size: 0.95rem;
-    color: var(--primary-900);
-    background: #fff;
-    transition: all 0.2s;
-    box-shadow: var(--shadow-input);
-}
-
-input:focus {
-    outline: none;
-    border-color: var(--accent-500);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-/* Custom File Input */
-input[type="file"] {
-    padding: 8px;
-    background: #f8fafc;
-}
-input[type="file"]::file-selector-button {
-    margin-right: 15px;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    background-color: white;
-    border: 1px solid var(--border-light);
-    color: var(--primary-900);
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-input[type="file"]::file-selector-button:hover {
-    background-color: #f1f5f9;
-}
-
-/* =========================================
-   7. BUTTONS
-   ========================================= */
-button, .btn {
-    border: none;
-    cursor: pointer;
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    font-size: 0.95rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s var(--ease-out);
-}
-
-/* Primary Action (Buy / Confirm) */
-.btn-buy, .btn-confirm, .btn-primary {
-    background-color: var(--primary-900);
-    color: white;
-    width: 100%;
-    margin-top: auto;
-    box-shadow: 0 4px 6px rgba(15, 23, 42, 0.15);
-}
-
-.btn-buy:hover, .btn-confirm:hover, .btn-primary:hover {
-    background-color: var(--primary-700);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(15, 23, 42, 0.2);
-}
-
-/* Accent Variant for Order Confirmation */
-.btn-confirm {
-    background-color: var(--accent-500);
-    box-shadow: 0 4px 10px var(--accent-glow);
-}
-.btn-confirm:hover {
-    background-color: var(--accent-600);
-}
-
-/* Danger / Cancel */
-.btn-danger {
-    background-color: white;
-    color: var(--danger);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    padding: 6px 16px;
-    font-size: 0.85rem;
-    border-radius: 50px;
-}
-.btn-danger:hover {
-    background-color: var(--danger-soft);
-    border-color: var(--danger);
-}
-
-/* =========================================
-   8. TABLES & STATUS
+   6. TABLES & ORDERS
    ========================================= */
 .table-responsive {
     overflow-x: auto;
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
+    background: var(--bg-card);
+    border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
-    white-space: nowrap;
+    min-width: 600px;
 }
 
-.table thead th {
-    background-color: #f8fafc;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 16px 24px;
+.table th, .table td {
+    padding: 15px;
     text-align: left;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.table tbody td {
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border-light);
-    color: var(--text-body);
+.table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
 }
 
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.table tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-/* Status Badges with Dots */
+/* Status Badges */
 .status-badge {
-    padding: 6px 12px;
+    padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    font-weight: 600;
+    display: inline-block;
 }
 
-.status-badge::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-}
-
-.status-Pending {
-    background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5;
-}
-.status-Pending::before { background: #ea580c; }
-
-.status-Cancelled {
-    background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2;
-}
-.status-Cancelled::before { background: #dc2626; }
-
-.status-Completed, .status-Active {
-    background: #ecfdf5; color: #059669; border: 1px solid #d1fae5;
-}
-.status-Completed::before, .status-Active::before { background: #059669; }
+.status-Pending { background: #fffbeb; color: var(--status-pending); border: 1px solid #fcd34d; }
+.status-Confirmed { background: #eff6ff; color: var(--status-confirmed); border: 1px solid #93c5fd; }
+.status-For-Delivery { background: #f5f3ff; color: var(--status-delivery); border: 1px solid #c4b5fd; }
+.status-Completed { background: #ecfdf5; color: var(--status-completed); border: 1px solid #6ee7b7; }
+.status-Cancelled { background: #fef2f2; color: var(--status-cancelled); border: 1px solid #fca5a5; }
 
 /* =========================================
-   9. CONTACT SECTION
+   7. FORMS & BUTTONS
    ========================================= */
-.contact-section {
-    background: white;
-}
-.contact-card {
-    background: #f8fafc;
-    padding: 24px;
-    border-radius: var(--radius-md);
-    border: 1px dashed var(--border-light);
-}
-.contact-card p {
-    margin-bottom: 12px;
-    color: var(--text-body);
-}
-
-/* =========================================
-   10. ADMIN PANEL SPECIFICS
-   ========================================= */
-.admin-body {
-    background-color: #0f172a; /* Dark Mode for Auth Pages */
-    min-height: 100vh;
-}
-
-/* Admin Logged-In View */
-#admin-view {
-    background-color: #f1f5f9; /* Light grey dashboard bg */
-    min-height: 100vh;
-}
-
-.admin-nav {
-    background: #1e293b;
-    border-bottom: 1px solid #334155;
-}
-.admin-nav .logo { color: white; }
-.admin-nav .nav-links a { color: #94a3b8; }
-.admin-nav .nav-links a:hover { color: white; }
-
-.admin-card {
-    background: white;
-    border-top: 4px solid var(--accent-500); /* Color accent at top */
-}
-
-/* Login/Auth Boxes (Centered) */
-.login-container {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 75%);
-}
-
-.login-box {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 20px;
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="file"],
+select,
+textarea {
     width: 100%;
-    max-width: 400px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+/* Buttons */
+button, .btn-primary, .btn-confirm, .btn-buy, .btn-danger {
+    cursor: pointer;
+    border: none;
+    border-radius: var(--radius);
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: filter 0.2s, transform 0.1s;
+    display: inline-block;
     text-align: center;
+}
+
+button:active { transform: scale(0.98); }
+
+.btn-buy {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+}
+
+.btn-confirm, .btn-primary, .btn-update {
+    background: var(--primary);
     color: white;
 }
 
-.login-box h2 { color: white; margin-bottom: 8px; }
-.login-box p { color: #94a3b8; margin-bottom: 24px; font-size: 0.9rem; }
-.login-box input {
-    background: rgba(0,0,0,0.3);
-    border-color: rgba(255,255,255,0.1);
+.btn-danger {
+    background: var(--status-cancelled);
     color: white;
 }
-.login-box input:focus { border-color: var(--accent-500); }
 
-.back-link-muted {
-    font-size: 0.85rem;
-    color: #64748b;
-    text-decoration: none;
+.btn-disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    padding: 5px 10px;
+    font-size: 0.8rem;
 }
-.back-link-muted:hover { color: #94a3b8; }
 
-.error-msg {
-    color: #f87171;
-    background: rgba(239, 68, 68, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    margin-top: 15px;
+.note-text {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
 }
 
 /* =========================================
-   11. MODAL
+   8. MODALS & ALERTS
    ========================================= */
 .modal {
     display: none;
     position: fixed;
     z-index: 2000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.2s ease-out;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Fallback background */
+    
+    /* Safari / iOS support */
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
-    background-color: white;
-    margin: 10vh auto;
-    padding: 32px;
-    border-radius: var(--radius-xl);
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
     width: 90%;
-    max-width: 480px;
-    box-shadow: var(--shadow-lg);
+    max-width: 500px;
     position: relative;
-    animation: slideUp 0.3s var(--ease-out);
+    box-shadow: var(--shadow-lg);
+    animation: modalSlideIn 0.3s ease-out;
 }
 
-.modal-content h3 {
-    margin-bottom: 8px;
-    font-size: 1.5rem;
-}
-
-.highlight-text {
-    color: var(--accent-600);
-    font-weight: 700;
-    margin-bottom: 24px;
-    font-size: 1.1rem;
+@keyframes modalSlideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .close-btn {
     position: absolute;
-    top: 20px; right: 20px;
-    width: 32px; height: 32px;
-    background: #f1f5f9;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
     cursor: pointer;
-    font-size: 1.2rem;
-    color: var(--text-muted);
-    transition: 0.2s;
 }
-.close-btn:hover {
-    background: var(--danger-soft);
-    color: var(--danger);
+
+.close-btn:hover { color: #000; }
+
+.alert {
+    padding: 12px;
+    border-radius: var(--radius);
+    margin: 15px auto;
+    max-width: 600px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.alert-success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+
+/* =========================================
+   9. AUTH & ADMIN PAGES
+   ========================================= */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - var(--header-height));
+    background: #f1f5f9;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-box h2 {
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+.login-box p {
+    color: var(--text-muted);
+    margin-bottom: 25px;
+}
+
+.auth-link {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auth-link:hover { text-decoration: underline; }
+
+.logout-btn-ghost {
+
+  display: inline-block;
+  padding: 6px 16px; 
+  text-decoration: none; 
+  font-weight: 600;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b; 
+  border-radius: 50px; 
+  transition: all 0.3s ease; 
+  background-color: transparent;
+}
+
+.logout-btn-ghost:hover {
+  background-color: #ff6b6b; 
+  color: white; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 6px rgba(255, 107, 107, 0.2); 
+}
+
+.admin-body {
+    background: #f8fafc;
+}
+
+.admin-nav {
+    background: #1e293b; 
+}
+
+.admin-nav .logo { color: #fff; }
+.admin-nav .nav-links a { color: #cbd5e1; }
+.admin-nav .nav-links a:hover { color: #fff; }
+
+.admin-card {
+    background: white;
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+}
+
+.admin-card h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--bg-body);
+}
+
+.error-msg {
+    color: var(--status-cancelled);
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.highlight-text {
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.back-link-muted {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 15px;
+    display: inline-block;
 }
 
 /* =========================================
-   12. ANIMATIONS & MEDIA QUERIES
+   10. CONTACT SECTION
    ========================================= */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.contact-section {
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
 
+.contact-card {
+    background: white;
+    display: inline-block;
+    padding: 30px 50px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+}
+
+.contact-card p {
+    margin: 10px 0;
+    font-size: 1.1rem;
+}
+
+/* =========================================
+   11. RESPONSIVE DESIGN
+   ========================================= */
 @media (max-width: 768px) {
-    .main-content { padding: 20px 16px; }
-    
-    .hero-section {
-        padding: 50px 16px;
-    }
-    .hero-section h1 { font-size: 2.25rem; }
+    .hamburger { display: flex; }
 
-    /* Mobile Nav: Horizontal Scroll instead of wrap */
-    nav {
-        padding: 0 16px;
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 20px;
-    }
-    
     .nav-links {
-        justify-content: flex-end;
-        gap: 15px;
-    }
-    
-    .nav-links a { font-size: 0.85rem; }
-    
-    /* On very small screens, hide text links and only show icon or hamburger? 
-       For now, we keep it simple */
-    
-    .product-grid {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .table thead { display: none; }
-    .table, .table tbody, .table tr, .table td {
-        display: block;
+        display: none; /* JS would toggle this */
+        position: absolute;
+        top: var(--header-height);
+        left: 0;
         width: 100%;
-    }
-    .table tr {
-        margin-bottom: 16px;
         background: white;
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-md);
-        padding: 12px;
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
     }
-    .table td {
-        padding: 8px 0;
-        border: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: right;
-        font-size: 0.9rem;
-    }
-    /* Add labels for mobile */
-    .table td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        text-align: left;
+    
+    /* If you implement JS toggling class 'active' on nav-links */
+    .nav-links.active { display: flex; }
+
+    .hero-section h1 { font-size: 2rem; }
+    
+    .product-grid { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); }
+    
+    .contact-card { width: 100%; padding: 20px; }
+    
+    /* Stack admin add product form */
+    form[enctype="multipart/form-data"] {
+        flex-direction: column;
+        align-items: stretch !important;
     }
 }
