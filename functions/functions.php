@@ -166,6 +166,14 @@ function getProducts() {
     }
 }
 
+// --- NEW FUNCTION: Get Single Product by ID (For Editing) ---
+function getProductById($id) {
+    $pdo = getDB();
+    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+    $stmt->execute([$id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 // This function expects exactly 4 arguments: Name, Description, Price, File
 function addProduct($name, $description, $price, $file) {
     $pdo = getDB();
@@ -198,6 +206,44 @@ function addProduct($name, $description, $price, $file) {
 
     $stmt = $pdo->prepare("INSERT INTO products (name, description, price, img) VALUES (?, ?, ?, ?)");
     return $stmt->execute([$name, $description, floatval($price), $imagePath]);
+}
+
+// --- NEW FUNCTION: Update Product ---
+function updateProduct($id, $name, $description, $price, $file) {
+    $pdo = getDB();
+    $uploadDir = 'uploads/';
+    
+    // 1. Check if a new image was provided
+    if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
+        
+        // Fetch old image to delete it (optional cleanup)
+        $oldProduct = getProductById($id);
+        if ($oldProduct && file_exists($oldProduct['img']) && strpos($oldProduct['img'], 'uploads/') !== false) {
+            unlink($oldProduct['img']);
+        }
+
+        // Process new image
+        $fileTmpPath = $file['tmp_name'];
+        $fileName    = $file['name'];
+        $cleanFileName = preg_replace("/[^a-zA-Z0-9.]/", "", basename($fileName));
+        $newFileName   = time() . '_' . $cleanFileName;
+        $dest_path     = $uploadDir . $newFileName; 
+        
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowedExts = ['jpg', 'gif', 'png', 'jpeg', 'webp'];
+
+        if (in_array($ext, $allowedExts)) {
+            if(move_uploaded_file($fileTmpPath, $dest_path)) {
+                // Update with new image
+                $stmt = $pdo->prepare("UPDATE products SET name=?, description=?, price=?, img=? WHERE id=?");
+                return $stmt->execute([$name, $description, floatval($price), $dest_path, $id]);
+            }
+        }
+    }
+
+    // 2. No new image uploaded (or upload failed), update only text fields
+    $stmt = $pdo->prepare("UPDATE products SET name=?, description=?, price=? WHERE id=?");
+    return $stmt->execute([$name, $description, floatval($price), $id]);
 }
 
 function deleteProduct($id) {

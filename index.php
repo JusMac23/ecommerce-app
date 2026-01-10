@@ -89,6 +89,7 @@ if ($currentUser) {
     <title>Souvenir Shop</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/modal_product.css">
+    <link rel="stylesheet" href="css/contact_us.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -169,7 +170,7 @@ if ($currentUser) {
 
             <div id="product-view-modal" class="modal-overlay" style="display: none;">
                 <div class="modal-content product-expand">
-                    <span class="close-modal" onclick="closeProductView()">&times;</span>
+                    <span class="close-modal" onclick="closeProductView()">×</span>
                     
                     <div class="modal-body">
                         <div class="modal-img-col">
@@ -220,6 +221,7 @@ if ($currentUser) {
                                     $isPast24Hours = (time() - $orderTime) > 86400;
                                     $isPending = $o['status'] === 'Pending';
                                     $isCancelled = $o['status'] === 'Cancelled';
+                                    $isCompleted = $o['status'] === 'Completed';
                                 ?>
                                 <tr>
                                     <td>#<?= $o['id'] ?></td>
@@ -231,14 +233,26 @@ if ($currentUser) {
                                     <td>
                                         <?php if ($isCancelled): ?>
                                             <span style="color:#999;">-</span>
+
+                                        <?php elseif ($isCompleted): ?>
+                                            <button class="btn-disabled" disabled>Cancel</button>
+                                            <span class="note-text">Thank you for ordering!</span>
+
                                         <?php elseif ($isPast24Hours): ?>
                                             <button class="btn-disabled" disabled>Cancel</button>
                                             <span class="note-text">Cannot cancel orders after 24hrs</span>
+
                                         <?php elseif (!$isPending): ?>
                                             <button class="btn-disabled" disabled>Cancel</button>
                                             <span class="note-text">Order processing</span>
+
                                         <?php else: ?>
-                                            <a href="?cancel_order=<?= $o['id'] ?>" class="btn-danger" style="text-decoration:none; padding:5px 10px; font-size:0.8em;" onclick="return confirm('Cancel this order?')">Cancel</a>
+                                            <a href="?cancel_order=<?= $o['id'] ?>"
+                                            class="btn-danger"
+                                            style="text-decoration:none; padding:5px 10px; font-size:0.8em;"
+                                            onclick="return confirm('Cancel this order?')">
+                                            Cancel
+                                            </a>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -252,19 +266,54 @@ if ($currentUser) {
 
         <div id="contact" class="container contact-section">
             <h2>Contact Us</h2>
-            <div class="contact-card">
-                <p><strong>📞 Admin Phone:</strong> <?= defined('ADMIN_PHONE') ? ADMIN_PHONE : 'N/A' ?></p>
-                <p><strong>📧 Email:</strong> support@souvenirshop.com</p>
-                <p><strong>📍 Location:</strong> Gracepark, Caloocan City</p>
+            
+            <div class="contact-info-header">
+                <span><strong><i class="fa fa-phone" style="color:#0d9488;"></i> Phone:</strong> <?= defined('ADMIN_PHONE') ? ADMIN_PHONE : 'N/A' ?></span> | 
+                <span><strong><i class="fa fa-envelope" style="color:#0d9488;"></i> Email:</strong> support@souvenirshop.com</span> | 
+                <span><strong><i class="fa fa-map-marker" style="color:#0d9488;"></i> Location:</strong> Gracepark, Caloocan City</span>
+            </div>
+
+            <div class="contact-container-row">
+                
+                <div class="map-left">
+                    <iframe 
+                        src="https://maps.google.com/maps?q=Gracepark%20Caloocan&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                        allowfullscreen 
+                        loading="lazy">
+                    </iframe>
+                </div>
+
+                <div class="form-right">
+                    <h3>Send a Message</h3>
+                    <form action="send_message.php" method="POST">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea name="message" rows="5" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Submit</button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
 
     <div id="order-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('order-modal')">&times;</span>
-            <h3>Place Order</h3>
-            <p id="modal-product-name" class="highlight-text"></p>
+            <span class="close-btn" onclick="closeModal('order-modal')">×</span>
+            <h3 style="margin-bottom:10px; text-align:center;">Place Order</h3>
+            <span style="margin-bottom:15px; display:block;">
+                Item:
+                <span id="modal-product-name" class="highlight-text"></span>
+            </span>
             <form method="POST" action="index.php">
                 <input type="hidden" name="action" value="place_order">
                 <input type="hidden" id="modal-product-id" name="product_id">
@@ -278,14 +327,14 @@ if ($currentUser) {
                 <label>Delivery Address</label>
                 <input type="text" name="address" placeholder="Enter complete address" required>
                 
-                <button type="submit" class="btn-confirm">Confirm Order</button>
+                <button type="submit" class="btn-confirm" style="width:100%;">Confirm Order</button>
             </form>
         </div>
     </div>
 
     <div id="auth-modal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 400px;">
-            <span class="close-btn" onclick="closeModal('auth-modal')">&times;</span>
+            <span class="close-btn" onclick="closeModal('auth-modal')">×</span>
             
             <?php if ($error && ($action_type === 'login' || $action_type === 'register')): ?>
                 <div class="alert alert-error" style="margin-bottom:15px;"><?= $error ?></div>
@@ -315,24 +364,24 @@ if ($currentUser) {
                     <input type="hidden" name="action" value="register">
                     
                     <label>First Name</label>
-                    <input type="text" name="firstname" placeholder="John" required>
+                    <input type="text" name="firstname" placeholder="John" style="font-family: Google Sans, sans-serif;" required>
                     
                     <label>Middle Initial (Optional)</label>
-                    <input type="text" name="middlename" placeholder="J" maxlength="1">
+                    <input type="text" name="middlename" placeholder="J" maxlength="1" style="font-family: Google Sans, sans-serif;">
                     
                     <label>Last Name</label>
-                    <input type="text" name="lastname" placeholder="Doe" required>
+                    <input type="text" name="lastname" placeholder="Doe" style="font-family: Google Sans, sans-serif;" required>
                     
                     <label>Email Address</label>
-                    <input type="email" name="email" placeholder="johndoe@gmail.com" required>
+                    <input type="email" name="email" placeholder="johndoe@gmail.com" style="font-family: Google Sans, sans-serif;" required>
                     
                     <label>Phone Number</label>
-                    <input type="text" name="phone" placeholder="09123456789" required>
+                    <input type="text" name="phone" placeholder="09123456789" style="font-family: Google Sans, sans-serif;" required>
                     
                     <label>Password</label>
                     <input type="password" name="password" required>
                     
-                    <button type="submit" class="btn-confirm" style="width:100%;">Sign Up</button>
+                    <button type="submit" class="btn-confirm" style="width:100%; font-family: Google Sans, sans-serif;">Sign Up</button>
                 </form>
                 <p style="margin-top:15px; text-align:center;">Have account? <span class="auth-link" onclick="toggleAuth('login')">Login here</span></p>
             </div>

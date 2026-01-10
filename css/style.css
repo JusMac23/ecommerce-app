@@ -517,31 +517,9 @@ button:active { transform: scale(0.98); }
     display: inline-block;
 }
 
-/* =========================================
-   10. CONTACT SECTION
-   ========================================= */
-.contact-section {
-    text-align: center;
-    margin-top: 50px;
-    margin-bottom: 50px;
-}
-
-.contact-card {
-    background: white;
-    display: inline-block;
-    padding: 30px 50px;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    text-align: left;
-}
-
-.contact-card p {
-    margin: 10px 0;
-    font-size: 1.1rem;
-}
 
 /* =========================================
-   11. RESPONSIVE DESIGN
+   10. RESPONSIVE DESIGN
    ========================================= */
 @media (max-width: 768px) {
     .admin-hamburger { display: flex; }

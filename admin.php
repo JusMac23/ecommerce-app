@@ -43,7 +43,24 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 2. Delete Product
+    // 2. Update Product (New Logic)
+    if (isset($_POST['update_product'])) {
+        $id = $_POST['product_id'];
+        $name = $_POST['name'];
+        $desc = $_POST['description'];
+        $price = $_POST['price'];
+        $file = $_FILES['img'];
+
+        if(updateProduct($id, $name, $desc, $price, $file)) {
+            $_SESSION['message'] = "Product updated successfully!";
+        } else {
+            $_SESSION['message'] = "Failed to update product.";
+        }
+        header("Location: admin.php");
+        exit;
+    }
+
+    // 3. Delete Product
     if (isset($_GET['delete_product'])) {
         deleteProduct($_GET['delete_product']);
         $_SESSION['message'] = "Product deleted successfully!";
@@ -51,7 +68,7 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 3. Update Order Status
+    // 4. Update Order Status
     if (isset($_POST['update_status'])) {
         $orderId = $_POST['order_id'];
         $newStatus = $_POST['status'];
@@ -79,6 +96,7 @@ $orders = getOrders();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/edit_modal_product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="admin-body">
@@ -129,16 +147,16 @@ $orders = getOrders();
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="form-group" enctype="multipart/form-data" style="display:flex; flex-direction: column; gap:10px;">
+                <form method="POST" class="form-group" enctype="multipart/form-data" style="display:flex; flex-direction: column;">
                     <input type="hidden" name="add_product" value="1">
-                    <input type="text" name="name" placeholder="Product Name" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <textarea name="description" placeholder="Product Description" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; min-height: 80px;"></textarea>
-                    <input type="number" name="price" step="0.01" placeholder="Price" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <div style="padding: 5px; border: 1px dashed #ccc;">
+                    <input type="text" name="name" placeholder="Product Name" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family: Google sans;">
+                    <textarea name="description" placeholder="Product Description" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; min-height: 80px; margin-bottom: 10px; font-family: Google sans;"></textarea>
+                    <input type="number" name="price" step="0.01" placeholder="Price" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family: Google sans;">
+                    <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                         <label style="display:block; margin-bottom:5px; font-size: 0.9em; color:#666;">Product Image:</label>
                         <input type="file" name="img" accept="image/*" required>
                     </div>
-                    <button type="submit" class="btn-confirm" style="padding: 10px; background-color: var(--primary, #007bff); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    <button type="submit" class="btn-confirm" style="padding: 10px; margin-top: 15px; background-color: var(--primary, #007bff); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: Google sans;">
                         Add Product
                     </button>
                 </form>
@@ -150,19 +168,43 @@ $orders = getOrders();
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Image</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Action</th>
+                                <th style="width: 80px;">Image</th>
+                                <th style="width: 20%;">Name</th>
+                                <th style="width: 35%;">Description</th>
+                                <th style="width: 15%;">Price</th>
+                                <th style="width: 15%;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($products as $p): ?>
                             <tr>
                                 <td><img src="<?= $p['img'] ?>" width="60" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                                <td><?= htmlspecialchars($p['name']) ?></td>
-                                <td>₱<?= number_format($p['price'], 2) ?></td>
-                                <td><a href="?delete_product=<?= $p['id'] ?>" class="btn-danger" style="text-decoration:none; padding:5px 10px;" onclick="return confirm('Delete this product?')">Delete</a></td>
+                                
+                                <td><strong><?= htmlspecialchars($p['name']) ?></strong></td>
+                                
+                                <td style="font-size: 0.9em; color: #555;">
+                                    <?= strlen($p['description']) > 50 ? htmlspecialchars(substr($p['description'], 0, 50)) . '...' : htmlspecialchars($p['description']) ?>
+                                </td>
+                                
+                                <td style="font-weight: bold; color: var(--primary);">₱<?= number_format($p['price'], 2) ?></td>
+                                
+                                <td>
+                                    <div class="action-btn-group">
+                                        <button class="btn-edit" 
+                                            onclick="openEditModal(
+                                                '<?= $p['id'] ?>', 
+                                                '<?= addslashes($p['name']) ?>', 
+                                                '<?= addslashes(str_replace(array("\r", "\n"), '', $p['description'])) ?>', 
+                                                '<?= $p['price'] ?>'
+                                            )">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+
+                                        <a href="?delete_product=<?= $p['id'] ?>" class="btn-delete" onclick="return confirm('Delete this product?')">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -200,14 +242,14 @@ $orders = getOrders();
                                     <form method="POST" class="status-form">
                                         <input type="hidden" name="update_status" value="1">
                                         <input type="hidden" name="order_id" value="<?= $o['id'] ?>">
-                                        <select name="status" class="status-select">
+                                        <select name="status" class="status-select" style="font-family: Google sans;">
                                             <option value="Pending" <?= $o['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
                                             <option value="Confirmed" <?= $o['status'] == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
                                             <option value="For Delivery" <?= $o['status'] == 'For Delivery' ? 'selected' : '' ?>>For Delivery</option>
                                             <option value="Completed" <?= $o['status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
                                             <option value="Cancelled" <?= $o['status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                         </select>
-                                        <button type="submit" class="btn-update" style="width: 100%;">Save</button>
+                                        <button type="submit" class="btn-update" style="width: 100%; font-family: Google sans;">Save</button>
                                     </form>
                                 </td>
                             </tr>
@@ -220,7 +262,38 @@ $orders = getOrders();
         </div>
     </div>
 
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">×</span>
+            <h3 style="text-align:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px;">Edit Product</h3>
+            
+            <form method="POST" enctype="multipart/form-data" class="modal-form">
+                <input type="hidden" name="update_product" value="1">
+                <input type="hidden" id="edit-id" name="product_id">
+                
+                <label>Product Name</label>
+                <input type="text" id="edit-name" name="name" required>
+                
+                <label>Description</label>
+                <textarea id="edit-desc" name="description" rows="4" required></textarea>
+                
+                <label>Price</label>
+                <input type="number" id="edit-price" name="price" step="0.01" required>
+                
+                <label>Change Image (Optional)</label>
+                <input type="file" name="img" accept="image/*">
+                <small style="color:#666;">Leave blank to keep current image.</small>
+                
+                <div style="margin-top:20px; text-align:right;">
+                    <button type="button" onclick="closeEditModal()" style="padding:10px 15px; border:none; background:#ccc; cursor:pointer; border-radius:4px; margin-right:5px; font-family: Google sans">Cancel</button>
+                    <button type="submit" style="padding:10px 20px; border:none; background:var(--primary, #007bff); color:white; font-weight:bold; cursor:pointer; border-radius:4px; font-family: Google sans">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="js/sidebar.js"></script>
+    <script src="js/edit_modal_product.js"></script>
 
     <?php endif; ?>
 </body>
