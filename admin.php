@@ -1,6 +1,24 @@
 <?php
+session_start(); // Ensure session is started at the very top
 
 require 'functions/functions.php';
+
+// --- 1. HANDLE AJAX REQUEST (Mark as Read) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read_id'])) {
+    if (!function_exists('getDB')) { 
+        require_once __DIR__ . '/database/connection.php'; 
+    }
+    
+    try {
+        $conn = getDB();
+        $stmt = $conn->prepare("DELETE FROM messages WHERE id = ?");
+        $stmt->execute([$_POST['mark_read_id']]);
+        echo "success"; 
+    } catch (Exception $e) {
+        echo "error";
+    }
+    exit; 
+}
 
 // --- AUTHENTICATION ---
 $error = "";
@@ -13,6 +31,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_admin'])) {
     // Check against admins table
     if (checkAdminLogin($username, $password)) {
         $_SESSION['admin_logged_in'] = true;
+
+        // --- FIXED: FETCH AND SAVE ADMIN ID ---
+        // We must get the ID so admin_account.php knows who is logged in
+        if (!function_exists('getDB')) { 
+            require_once __DIR__ . '/database/connection.php'; 
+        }
+        $conn = getDB();
+        
+        // Fetch ID based on the username
+        $stmt = $conn->prepare("SELECT id, username FROM admins WHERE username = ? LIMIT 1");
+        $stmt->execute([$username]);
+        $adminData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($adminData) {
+            $_SESSION['admin_id'] = $adminData['id']; // <--- CRITICAL FIX
+            $_SESSION['admin_username'] = $adminData['username'];
+        }
+        // --------------------------------------
+
         header("Location: admin.php");
         exit;
     } else {
@@ -43,7 +80,7 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 2. Update Product (New Logic)
+    // 2. Update Product
     if (isset($_POST['update_product'])) {
         $id = $_POST['product_id'];
         $name = $_POST['name'];
@@ -72,21 +109,42 @@ if ($isLoggedIn) {
     if (isset($_POST['update_status'])) {
         $orderId = $_POST['order_id'];
         $newStatus = $_POST['status'];
-        updateOrderStatus($orderId, $newStatus);
+        updateOrderStatus($orderId, $newStatus); 
         $_SESSION['message'] = "Order status updated!";
         header("Location: admin.php");
         exit;
     }
 }
 
-// Check for session messages (Feedback for actions)
+// Check for session messages
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
-    unset($_SESSION['message']); // Clear message after displaying
+    unset($_SESSION['message']); 
 }
 
-$products = getProducts();
-$orders = getOrders();
+// --- DATA FETCHING ---
+$products = [];
+$orders = [];
+$messages = [];
+
+if ($isLoggedIn) {
+    $products = getProducts();
+    $orders = getOrders();
+
+    // --- MESSAGE FETCHING ---
+    if (!function_exists('getDB')) {
+        require_once __DIR__ . '/database/connection.php'; 
+    }
+    
+    try {
+        $conn = getDB(); 
+        $stmt = $conn->prepare("SELECT * FROM messages ORDER BY created_at DESC");
+        $stmt->execute();
+        $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $messages = []; 
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -97,6 +155,7 @@ $orders = getOrders();
     <title>Admin Panel</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/edit_modal_product.css">
+    <link rel="stylesheet" href="css/messages.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="admin-body">
@@ -107,15 +166,22 @@ $orders = getOrders();
             <h2>Admin Login</h2>
             <form method="POST">
                 <input type="hidden" name="login_admin" value="1">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit" class="btn-confirm" style="width:100%;">Login</button>
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Username" style="font-family: 'Google Sans', sans-serif; width: 100%; padding: 10px; box-sizing: border-box;" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Password" style="font-family: 'Google Sans', sans-serif; width: 100%; padding: 10px; box-sizing: border-box;" required>
+                </div>
+                <button type="submit" class="btn-confirm" style="width:100%; font-family: 'Google Sans', sans-serif; padding: 10px; cursor: pointer; margin-bottom:10px;">Login</button>
+                <a href="forgot_password.php" class="forgot-password-link">Forgot Password?</a>
             </form>
+
             <?php if ($error): ?>
-                <p class="error-msg"><?= $error ?></p>
+                <p class="error-msg" style="color: red; margin-top: 10px;"><?= $error ?></p>
             <?php endif; ?>
+            
             <br>
-            <a href="index.php" style="color:#666; font-size:0.9em;">← Back to Shop</a>
+            <a href="index.php" style="color:#666; font-size:0.9em; text-decoration: none; font-family: 'Google Sans', sans-serif;">← Back to Shop</a>
         </div>
     </div>
     <?php else: ?>
@@ -131,6 +197,13 @@ $orders = getOrders();
             </div>
 
             <div class="nav-links">
+                <a href="admin_account.php" class="account-link">My Account</a>
+                <a href="#" onclick="openMessagesModal(); return false;" class="notification-link">
+                    Message 
+                    <?php if(count($messages) > 0): ?>
+                        <span id="msg-badge-count" class="notification-badge"><?= count($messages) ?></span>
+                    <?php endif; ?>
+                </a>
                 <a href="index.php" target="_blank">View Shop</a>
                 <a href="?logout=true" class="logout-btn-ghost">Logout</a>
             </div>
@@ -291,12 +364,130 @@ $orders = getOrders();
             </form>
         </div>
     </div>
-        <div class="footer">
+
+    <div id="messages-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeMessagesModal()">×</span>
+            <h3 style="text-align:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px;">
+                <i class="fa fa-envelope" style="color: var(--primary);"></i> Inbound Messages
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th width="5%">ID</th>
+                            <th width="15%">Date</th>
+                            <th width="15%">Name</th>
+                            <th width="20%">Email</th>
+                            <th width="35%">Message</th>
+                            <th width="10%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($messages) > 0): ?>
+                            <?php foreach ($messages as $row): ?>
+                                <tr id="msg-row-<?php echo $row['id']; ?>">
+                                    <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['name']); ?></td>
+                                    <td><a href="mailto:<?php echo htmlspecialchars($row['email']); ?>"><?php echo htmlspecialchars($row['email']); ?></a></td>
+                                    <td><?php echo nl2br(htmlspecialchars($row['message'])); ?></td>
+                                    <td>
+                                        <button 
+                                            onclick="markAsRead(<?php echo $row['id']; ?>)" 
+                                            style="padding:5px 15px; border:1px solid #007bff; background:transparent; color:gray; cursor:pointer; border-radius:25px; white-space:nowrap; font-family: 'Google Sans', sans-serif; transition: all 0.2s;"
+                                            onmouseover="this.style.background='#007bff'; this.style.color='white';"
+                                            onmouseout="this.style.background='transparent'; this.style.color='gray';"
+                                        >
+                                            <i class="fa fa-check"></i> Read
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="no-msg">No messages found.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
         <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
     </div>
 
     <script src="js/sidebar.js"></script>
     <script src="js/edit_modal_product.js"></script>
+    
+    <script>
+        const msgModal = document.getElementById('messages-modal');
+        
+        function openMessagesModal() {
+            msgModal.style.display = "block";
+        }
+        
+        function closeMessagesModal() {
+            msgModal.style.display = "none";
+        }
+        
+        // Handle closing when clicking outside the modal
+        window.onclick = function(event) {
+            const editModal = document.getElementById('edit-modal');
+            if (event.target == editModal) {
+                editModal.style.display = "none";
+            }
+            if (event.target == msgModal) {
+                msgModal.style.display = "none";
+            }
+        }
+
+        // --- NEW FUNCTION: Mark as Read & Update Badge ---
+        function markAsRead(id) {
+            if(!confirm('Mark this message as read? (This will delete it from view)')) return;
+
+            // Prepare form data for AJAX
+            let formData = new FormData();
+            formData.append('mark_read_id', id);
+
+            // Send request to same file (admin.php)
+            fetch('admin.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                // If the PHP block at the top returns "success"
+                if(data.trim() === 'success') {
+                    
+                    // 1. Remove the row from the table
+                    const row = document.getElementById('msg-row-' + id);
+                    if(row) {
+                        row.remove(); // Removes the element completely
+                    }
+
+                    // 2. Decrease the badge count
+                    const badge = document.getElementById('msg-badge-count');
+                    if(badge) {
+                        let count = parseInt(badge.innerText);
+                        count = count - 1;
+                        
+                        if(count <= 0) {
+                            badge.style.display = 'none'; // Hide badge if 0
+                        } else {
+                            badge.innerText = count; // Update text
+                        }
+                    }
+                } else {
+                    alert('Error updating status. Please try again.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 
     <?php endif; ?>
 </body>

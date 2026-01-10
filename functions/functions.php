@@ -299,4 +299,97 @@ function updateOrderStatus($id, $status, $userId = null) {
         $stmt->execute([$status, $id]);
     }
 }
+
+// ==========================================
+// 6. OTP EMAIL VIA BREVO
+// ==========================================
+function sendOtpViaBrevo($user_email, $otp_code) {
+    // 1. CONFIGURATION
+    $apiKey = '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'; 
+    
+    $senderName = 'Admin';
+
+    $senderEmail = 'j_macarayan@cda.gov.ph'; 
+
+    $url = 'https://api.brevo.com/v3/smtp/email';
+
+    $data = [
+        "sender" => ["name" => $senderName, "email" => $senderEmail],
+        "to" => [[ "email" => $user_email, "name" => "Admin User"]],
+        "subject" => "Your Password Recovery Code",
+        "htmlContent" => "
+            <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                <h2>Password Recovery</h2>
+                <p>You requested a password reset. Here is your OTP code:</p>
+                <h1 style='color: #007bff; letter-spacing: 5px;'>{$otp_code}</h1>
+                <p>This code expires in 10 minutes.</p>
+            </div>"
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'accept: application/json',
+        'api-key: ' . $apiKey,
+        'content-type: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    
+    // FIX: Disable SSL verification for Localhost (XAMPP/WAMP)
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    if (curl_errno($ch)) {
+        return "CURL Error: " . curl_error($ch);
+    }
+    
+    curl_close($ch);
+
+    // 201 = Success. Anything else is an error (e.g., 400, 401)
+    if ($httpCode == 201) {
+        return true; 
+    } else {
+        // Return the actual error from Brevo so we can see it
+        return "API Error ($httpCode): " . $response;
+    }
+}
+
+// ==========================================
+// 7. PASSWORD RESET
+// ==========================================
+function updatePasswordInDb($email_input, $plain_password) {
+    // 1. Include connection (using require_once to avoid errors)
+    require_once __DIR__ . '/../database/connection.php'; 
+
+    // 2. Get the connection variable
+    if (function_exists('getDB')) {
+        $conn = getDB();
+    } else {
+        global $conn; 
+    }
+
+    // 3. Hash the password
+    $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
+
+    // 4. PREPARE (PDO Syntax)
+    $sql = "UPDATE admins SET password = :pass WHERE username = :user";
+    $stmt = $conn->prepare($sql);
+    
+    // 5. EXECUTE (PDO Syntax)
+    $result = $stmt->execute([
+        ':pass' => $hashed_password,
+        ':user' => $email_input
+    ]);
+
+    if ($result) {
+        return true;
+    } else {
+        return false;
+    }
+}
 ?>

@@ -158,9 +158,9 @@ if ($currentUser) {
                             <span class="price">₱<?= number_format($p['price'], 2) ?></span>
                             
                             <?php if ($currentUser): ?>
-                                <button class="btn-buy" onclick="openOrderModal(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>')">Order Now</button>
+                                <button class="btn-buy" onclick="openOrderModal(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>')" style="font-family: Google Sans, sans-serif;">Order Now</button>
                             <?php else: ?>
-                                <button class="btn-buy" onclick="openAuthModal('login')">Order Now</button>
+                                <button class="btn-buy" onclick="openAuthModal('login')" style="font-family: Google Sans, sans-serif;">Order Now</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -284,7 +284,7 @@ if ($currentUser) {
                 </div>
 
                 <div class="form-right">
-                    <h3>Send a Message</h3>
+                    <h3 style="text-align: center;">Send a Message</h3>
                     <form action="send_message.php" method="POST">
                         <div class="form-group">
                             <label>Full Name</label>
@@ -319,13 +319,13 @@ if ($currentUser) {
                 <input type="hidden" id="modal-product-id" name="product_id">
                 
                 <label>Your Name</label>
-                <input type="text" name="name" value="<?= $currentUser ? htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) : '' ?>" readonly style="background:#f0f0f0;">
+                <input type="text" name="name" value="<?= $currentUser ? htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) : '' ?>" readonly style="background:#f0f0f0; font-family: Google Sans, sans-serif;">
                 
                 <label>Phone Number</label>
-                <input type="text" name="phone" value="<?= $currentUser ? htmlspecialchars($currentUser['phone']) : '' ?>" readonly style="background:#f0f0f0;">
-                
+                <input type="text" name="phone" value="<?= $currentUser ? htmlspecialchars($currentUser['phone']) : '' ?>" readonly style="background:#f0f0f0; font-family: Google Sans, sans-serif;">
+
                 <label>Delivery Address</label>
-                <input type="text" name="address" placeholder="Enter complete address" required>
+                <input type="text" name="address" placeholder="Enter complete address" style="font-family: Google Sans, sans-serif;" required>
                 
                 <button type="submit" class="btn-confirm" style="width:100%;">Confirm Order</button>
             </form>

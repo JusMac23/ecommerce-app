@@ -1,0 +1,54 @@
+/* Specific Styles for the Messages Modal to match Admin Theme */
+#messages-modal .modal-content {
+    max-width: 800px; 
+    width: 95%;
+}
+#messages-modal th {
+    background-color: var(--primary, #007BFF);
+    color: white;
+}
+.no-msg {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Specific Styles for the Messages Modal to match Admin Theme */
+#messages-modal .modal-content {
+    max-width: 900px;
+    width: 95%;
+}
+#messages-modal th {
+    background-color: var(--primary, #007BFF);
+    color: white;
+}
+.no-msg {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* --- NEW STYLES FOR NOTIFICATION BADGE --- */
+.notification-link {
+    position: relative; /* Allows absolute positioning of child elements */
+    display: inline-block;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;        
+    right: -14px;     
+    background-color: #ff0000; 
+    color: white;     
+    border-radius: 50%; 
+    width: 20px;      
+    height: 20px;     
+    font-size: 12px;  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+}
