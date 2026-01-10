@@ -517,9 +517,28 @@ button:active { transform: scale(0.98); }
     display: inline-block;
 }
 
-
 /* =========================================
    10. RESPONSIVE DESIGN
+   ========================================= */
+
+.footer {
+    background-color: #5c5a5a; 
+    color: #ffffff;           
+    text-align: center;     
+    padding: 25px 0;       
+    margin-top: 50px;        
+    font-size: 14px;          
+    border-top: 4px solid var(--primary, #007bff); 
+}
+
+.footer p {
+    margin: 0;                 
+    opacity: 0.8;              
+    letter-spacing: 0.5px;     
+}
+
+/* =========================================
+   11. RESPONSIVE DESIGN
    ========================================= */
 @media (max-width: 768px) {
     .admin-hamburger { display: flex; }
@@ -536,7 +555,7 @@ button:active { transform: scale(0.98); }
 
     .nav-links {
         color: #000;
-        display: none; /* JS would toggle this */
+        display: none; 
         position: absolute;
         top: var(--header-height);
         left: 0;

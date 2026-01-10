@@ -388,6 +388,10 @@ if ($currentUser) {
         </div>
     </div>
 
+    <div class="footer">
+        <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
+    </div>
+
     <script>
         // --- PHP INTERACTION: Auto-open modal on error ---
         <?php if ($action_type === 'login'): ?>

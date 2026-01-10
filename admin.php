@@ -291,6 +291,9 @@ $orders = getOrders();
             </form>
         </div>
     </div>
+        <div class="footer">
+        <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
+    </div>
 
     <script src="js/sidebar.js"></script>
     <script src="js/edit_modal_product.js"></script>
