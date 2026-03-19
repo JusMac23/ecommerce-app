@@ -33,13 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Verify OTP</title>
     <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .login-box { font-family: 'Google Sans', sans-serif; }
-        .form-control { width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box; font-family: 'Google Sans', sans-serif; text-align: center; letter-spacing: 5px; font-size: 1.2rem;}
-        .btn-primary { width: 100%; padding: 10px; cursor: pointer; font-family: 'Google Sans', sans-serif; background-color: #007bff; color: white; border: none; border-radius: 4px;}
-        .error-msg { color: #d93025; margin-top: 10px; text-align: center; display: block;}
-    </style>
+    <link rel="stylesheet" href="css/forgot_password_style.css">
 </head>
 <body class="admin-body">
     <div class="login-container">

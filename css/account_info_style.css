@@ -1,0 +1,21 @@
+/* =========================================
+   ACCOUNT INFO STYLES (1 Line Per Selector)
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&display=swap');
+body { font-family: 'Google Sans', sans-serif; background-color: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #1e293b; padding: 20px; box-sizing: border-box; }
+.account-container { background: #ffffff; width: 100%; max-width: 450px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.1); position: relative; }
+.close-btn { color: #94a3b8; font-size: 28px; text-decoration: none; font-weight: bold; transition: color 0.2s; line-height: 1; display: inline-block; cursor: pointer; }
+.close-btn:hover { color: #ef4444; }
+h2, h3 { margin-top: 0; color: #0f766e; }
+h3 { margin-top: 20px; font-size: 1.2rem; }
+hr { border: 0; height: 1px; background: #e2e8f0; margin: 25px 0; }
+.alert { padding: 12px; border-radius: 6px; margin-bottom: 20px; text-align: center; font-size: 0.9rem; font-weight: 500; }
+.alert.success { background-color: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.alert.danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; color: #475569; }
+.form-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 1rem; box-sizing: border-box; transition: border-color 0.2s; background: #fff; }
+.form-group input:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1); }
+button[type="submit"] { width: 100%; padding: 12px; background-color: #0d9488; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: filter 0.2s, transform 0.1s; font-family: inherit; margin-top: 5px; }
+button[type="submit"]:hover { filter: brightness(0.9); }
+button[type="submit"]:active { transform: scale(0.98); }

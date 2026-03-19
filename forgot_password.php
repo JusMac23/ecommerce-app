@@ -1,5 +1,5 @@
 <?php
-// 1. Enable full debugging to screen (Remove this when you go live!)
+// 1. Enable full debugging to screen
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -7,37 +7,60 @@ session_start();
 require 'functions/functions.php';
 
 $error_msg = ""; 
-$entered_email = ""; // Keep the email in the box if it fails
+$entered_email = ""; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
-    $entered_email = $email; // Save for sticky form
+    $entered_email = $email; 
     
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error_msg = "Invalid email format.";
     } else {
-        $otp = rand(100000, 999999);
-
-        // Send Email via Brevo
-        $result = sendOtpViaBrevo($email, $otp);
-
-        // Check if strictly TRUE
-        if ($result === true) {
-            $_SESSION['reset_email'] = $email;
-            $_SESSION['reset_otp'] = $otp; // Save OTP for verification step
+        if (!function_exists('getDB')) { 
+            require_once __DIR__ . '/database/connection.php'; 
+        }
+        
+        try {
+            $pdo = getDB();
+            // Force PDO to show exact errors if something is wrong
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            // UPDATE: Redirect to the OTP Verification page first
-            header("Location: verify_otp.php"); 
-            exit;
-        } else {
-            // FIX: Handle cases where the function returns boolean FALSE or an error string
-            if (is_string($result)) {
-                $detailed_error = $result;
+            // --- THE FIX IS HERE ---
+            // If your database column is named 'email', change 'username' back to 'email' below.
+            // If you are trying to reset a CUSTOMER password, change 'admins' to your users table name!
+            $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
+            $stmt->execute([$email]);
+            $adminRecord = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($adminRecord) {
+                // RECORD WAS FOUND! Proceeding to send OTP...
+                $otp = rand(100000, 999999);
+                $result = sendOtpViaBrevo($email, $otp);
+
+                if ($result === true) {
+                    $_SESSION['reset_email'] = $email;
+                    $_SESSION['reset_otp'] = $otp; 
+                    
+                    header("Location: verify_otp.php"); 
+                    exit;
+                } else {
+                    if (is_string($result)) {
+                        $detailed_error = $result;
+                    } else {
+                        $detailed_error = "Unknown error. Check Brevo API Key & Sender Email.";
+                    }
+                    $error_msg = "<strong>Record found, but Email Failed to send:</strong><br>" . $detailed_error;
+                }
             } else {
-                $detailed_error = "Unknown error. Check Brevo API Key & Sender Email.";
+                // Query succeeded, but no matching record was found
+                $error_msg = "We couldn't find an account associated with that email address.";
             }
             
-            $error_msg = "<strong>Failed to send:</strong><br>" . $detailed_error;
+        } catch (PDOException $e) {
+            // If the database crashes (e.g., wrong column name), it will tell you exactly what is wrong here
+            $error_msg = "<strong>Database Error:</strong> " . $e->getMessage();
+        } catch (Exception $e) {
+            $error_msg = "<strong>System Error:</strong> " . $e->getMessage();
         }
     }
 }
@@ -47,34 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password</title>
-    <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .login-box { font-family: 'Google Sans', sans-serif; }
-        .form-control { width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box; font-family: 'Google Sans', sans-serif; }
-        .btn-primary { width: 100%; padding: 10px; cursor: pointer; font-family: 'Google Sans', sans-serif; background-color: #007bff; color: white; border: none; border-radius: 4px;}
-        .btn-primary:hover { background-color: #0056b3; }
-        
-        /* High Visibility Error Box */
-        .error-box { 
-            background-color: #ffe6e6; 
-            border: 1px solid #d93025;
-            color: #d93025; 
-            padding: 15px; 
-            margin-bottom: 20px; /* Space below box */
-            border-radius: 4px; 
-            font-size: 0.9em; 
-            display: block; /* Ensure it's not hidden */
-            text-align: left;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/forgot_password_style.css">
 </head>
 <body class="admin-body">
     <div class="login-container">
         <div class="login-box">
             <h2>Recovery</h2>
-            <p style="color:#666; margin-bottom: 20px;">Enter your registered email address to receive an OTP.</p>
+            <p>Enter your registered email address.</p>
 
             <?php if (!empty($error_msg)): ?>
                 <div class="error-box">
@@ -84,11 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <form method="POST">
                 <input type="email" name="email" class="form-control" placeholder="name@example.com" value="<?= htmlspecialchars($entered_email) ?>" required>
-                <button type="submit" class="btn-primary" style="border-radius: 6px;">Send OTP Code</button>
+                <button type="submit" class="btn-primary">Send OTP Code</button>
             </form>
             
-            <br>
-            <a href="admin.php" style="color:#666; font-size:0.9em; text-decoration: none;">← Back to Login</a>
+            <a href="admin.php" class="back-link">← Back to Login</a>
         </div>
     </div>
 </body>

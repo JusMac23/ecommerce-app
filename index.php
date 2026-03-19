@@ -1,20 +1,17 @@
 <?php
-
 require 'functions/functions.php';
 
 $currentUser = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 $error = "";
 $success = "";
-$action_type = ""; // To track which form was submitted
+$action_type = ""; 
 
-// Handle Logout
 if (isset($_GET['logout'])) {
     session_destroy();
     header("Location: index.php");
     exit;
 }
 
-// Handle Customer Login
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
     $action_type = 'login';
     $email = $_POST['email']; 
@@ -31,9 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Handle Registration
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'register') {
-    $action_type = 'register'; // Value set here is 'register'
+    $action_type = 'register'; 
     $fname = $_POST['firstname'];
     $mname = $_POST['middlename'];
     $lname = $_POST['lastname'];
@@ -45,17 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     
     if ($regResult === true) {
         $success = "Account created successfully! Please login.";
-        $action_type = 'register_success'; // Special flag to switch to login view
+        $action_type = 'register_success'; 
     } else {
         $error = $regResult; 
     }
 }
 
-// Handle Place Order
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'place_order') {
     if (!$currentUser) {
         $error = "You must be logged in to place an order.";
-        $action_type = 'login'; // Trigger login modal if they try to order without auth
+        $action_type = 'login'; 
     } else {
         addOrder($_POST['product_id'], $_POST['name'], $_POST['phone'], $_POST['address'], $currentUser['id']);
         header("Location: index.php?success=order_placed#my-orders");
@@ -63,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Handle Cancel Order
 if (isset($_GET['cancel_order']) && $currentUser) {
     updateOrderStatus($_GET['cancel_order'], 'Cancelled', $currentUser['id']);
     header("Location: index.php#my-orders");
@@ -87,9 +81,7 @@ if ($currentUser) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Souvenir Shop</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/modal_product.css">
-    <link rel="stylesheet" href="css/contact_us.css">
+    <link rel="stylesheet" href="css/index_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -154,13 +146,12 @@ if ($currentUser) {
 
                         <div class="card-details">
                             <h4 onclick="viewProduct(this.parentElement.previousElementSibling)" style="cursor: pointer;"><?= htmlspecialchars($p['name']) ?></h4>
-                            
                             <span class="price">₱<?= number_format($p['price'], 2) ?></span>
                             
                             <?php if ($currentUser): ?>
-                                <button class="btn-buy" onclick="openOrderModal(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>')" style="font-family: Google Sans, sans-serif;">Order Now</button>
+                                <button class="btn-buy" onclick="openOrderModal(<?= $p['id'] ?>, '<?= addslashes($p['name']) ?>')">Order Now</button>
                             <?php else: ?>
-                                <button class="btn-buy" onclick="openAuthModal('login')" style="font-family: Google Sans, sans-serif;">Order Now</button>
+                                <button class="btn-buy" onclick="openAuthModal('login')">Order Now</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -168,7 +159,7 @@ if ($currentUser) {
                 <?php endif; ?>
             </div>
 
-            <div id="product-view-modal" class="modal-overlay" style="display: none;">
+            <div id="product-view-modal" class="modal-overlay">
                 <div class="modal-content product-expand">
                     <span class="close-modal" onclick="closeProductView()">×</span>
                     
@@ -194,6 +185,7 @@ if ($currentUser) {
                 </div>
             </div>
         </div>
+
         <div id="my-orders" class="container">
             <h2><i class="fa fa-shopping-cart" style="margin-right: 10px; color: var(--primary);"></i> My Orders</h2>
             <?php if (!$currentUser): ?>
@@ -233,19 +225,15 @@ if ($currentUser) {
                                     <td>
                                         <?php if ($isCancelled): ?>
                                             <span style="color:#999;">-</span>
-
                                         <?php elseif ($isCompleted): ?>
                                             <button class="btn-disabled" disabled>Cancel</button>
                                             <span class="note-text">Thank you for ordering!</span>
-
-                                        <?php elseif ($isPast24Hours): ?>
+                                        <?php elseif ($isPast24Hours && $isPending): ?>
                                             <button class="btn-disabled" disabled>Cancel</button>
                                             <span class="note-text">Cannot cancel orders after 24hrs</span>
-
                                         <?php elseif (!$isPending): ?>
                                             <button class="btn-disabled" disabled>Cancel</button>
                                             <span class="note-text">Order processing</span>
-
                                         <?php else: ?>
                                             <a href="?cancel_order=<?= $o['id'] ?>"
                                             class="btn-danger"
@@ -264,17 +252,25 @@ if ($currentUser) {
             <?php endif; ?>
         </div>
 
-        <div id="contact" class="container contact-section">
-            <h2>Contact Us</h2>
+        <div id="contact" class="container">
+            <h2><i class="fa fa-phone" style="margin-right: 10px; color: var(--primary);"></i>Contact Us</h2>
             
             <div class="contact-info-header">
-                <span><strong><i class="fa fa-phone" style="color:#0d9488;"></i> Phone:</strong> <?= defined('ADMIN_PHONE') ? ADMIN_PHONE : 'N/A' ?></span> | 
-                <span><strong><i class="fa fa-envelope" style="color:#0d9488;"></i> Email:</strong> support@souvenirshop.com</span> | 
-                <span><strong><i class="fa fa-map-marker" style="color:#0d9488;"></i> Location:</strong> Gracepark, Caloocan City</span>
+                <div class="info-item">
+                    <i class="fa fa-phone" style="color:var(--primary);"></i> 
+                    <strong>Phone:</strong> <?= defined('ADMIN_PHONE') ? ADMIN_PHONE : 'N/A' ?>
+                </div>
+                <div class="info-item">
+                    <i class="fa fa-envelope" style="color:var(--primary);"></i> 
+                    <strong>Email:</strong> support@souvenirshop.com
+                </div>
+                <div class="info-item">
+                    <i class="fa fa-map-marker" style="color:var(--primary);"></i> 
+                    <strong>Location:</strong> Gracepark, Caloocan City
+                </div>
             </div>
 
             <div class="contact-container-row">
-                
                 <div class="map-left">
                     <iframe 
                         src="https://maps.google.com/maps?q=Gracepark%20Caloocan&t=&z=13&ie=UTF8&iwloc=&output=embed" 
@@ -301,38 +297,36 @@ if ($currentUser) {
                         <button type="submit" class="btn-submit">Submit</button>
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <div id="order-modal" class="modal" style="display: none;">
+    <div id="order-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal('order-modal')">×</span>
             <h3 style="margin-bottom:10px; text-align:center;">Place Order</h3>
             <span style="margin-bottom:15px; display:block;">
-                Item:
-                <span id="modal-product-name" class="highlight-text"></span>
+                Item: <span id="modal-product-name" class="highlight-text"></span>
             </span>
             <form method="POST" action="index.php">
                 <input type="hidden" name="action" value="place_order">
                 <input type="hidden" id="modal-product-id" name="product_id">
                 
                 <label>Your Name</label>
-                <input type="text" name="name" value="<?= $currentUser ? htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) : '' ?>" readonly style="background:#f0f0f0; font-family: Google Sans, sans-serif;">
+                <input type="text" name="name" value="<?= $currentUser ? htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) : '' ?>" readonly style="background:#f0f0f0;">
                 
                 <label>Phone Number</label>
-                <input type="text" name="phone" value="<?= $currentUser ? htmlspecialchars($currentUser['phone']) : '' ?>" readonly style="background:#f0f0f0; font-family: Google Sans, sans-serif;">
+                <input type="text" name="phone" value="<?= $currentUser ? htmlspecialchars($currentUser['phone']) : '' ?>" readonly style="background:#f0f0f0;">
 
                 <label>Delivery Address</label>
-                <input type="text" name="address" placeholder="Enter complete address" style="font-family: Google Sans, sans-serif;" required>
+                <input type="text" name="address" placeholder="Enter complete address" required>
                 
-                <button type="submit" class="btn-confirm" style="width:100%;">Confirm Order</button>
+                <button type="submit" class="btn-confirm w-100">Confirm Order</button>
             </form>
         </div>
     </div>
 
-    <div id="auth-modal" class="modal" style="display: none;">
+    <div id="auth-modal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
             <span class="close-btn" onclick="closeModal('auth-modal')">×</span>
             
@@ -351,7 +345,7 @@ if ($currentUser) {
                     <label>Password</label>
                     <input type="password" name="password" required>
                     
-                    <button type="submit" class="btn-confirm" style="width:100%; margin-bottom:10px;"></i>Login</button>
+                    <button type="submit" class="btn-confirm w-100" style="margin-bottom:10px;">Login</button>
                 </form>
 
                 <a href="admin.php" class="btn-block btn-admin-link" style="display: block; text-align: center; color: var(--primary); font-weight: 600;">Go to Admin Login</a>
@@ -364,50 +358,55 @@ if ($currentUser) {
                     <input type="hidden" name="action" value="register">
                     
                     <label>First Name</label>
-                    <input type="text" name="firstname" placeholder="John" style="font-family: Google Sans, sans-serif;" required>
+                    <input type="text" name="firstname" placeholder="John" required>
                     
                     <label>Middle Initial (Optional)</label>
-                    <input type="text" name="middlename" placeholder="J" maxlength="1" style="font-family: Google Sans, sans-serif;">
+                    <input type="text" name="middlename" placeholder="J" maxlength="1">
                     
                     <label>Last Name</label>
-                    <input type="text" name="lastname" placeholder="Doe" style="font-family: Google Sans, sans-serif;" required>
+                    <input type="text" name="lastname" placeholder="Doe" required>
                     
                     <label>Email Address</label>
-                    <input type="email" name="email" placeholder="johndoe@gmail.com" style="font-family: Google Sans, sans-serif;" required>
+                    <input type="email" name="email" placeholder="johndoe@gmail.com" required>
                     
                     <label>Phone Number</label>
-                    <input type="text" name="phone" placeholder="09123456789" style="font-family: Google Sans, sans-serif;" required>
+                    <input type="text" name="phone" placeholder="09123456789" required>
                     
                     <label>Password</label>
                     <input type="password" name="password" required>
                     
-                    <button type="submit" class="btn-confirm" style="width:100%; font-family: Google Sans, sans-serif;">Sign Up</button>
+                    <button type="submit" class="btn-confirm w-100">Sign Up</button>
                 </form>
                 <p style="margin-top:15px; text-align:center;">Have account? <span class="auth-link" onclick="toggleAuth('login')">Login here</span></p>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
-    </div>
+    <footer class="footer">
+        <div class="footer-content">
+            <p>© <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script>
-        // --- PHP INTERACTION: Auto-open modal on error ---
         <?php if ($action_type === 'login'): ?>
-            // Login failed, reopen login modal
             openAuthModal('login');
         <?php elseif ($action_type === 'register'): ?>
-            // Registration failed (e.g., email taken), reopen register modal
             openAuthModal('register');
         <?php elseif ($action_type === 'register_success'): ?>
-            // Registration success, open login modal
             openAuthModal('login');
         <?php endif; ?>
+
+        // Ensures the modal display style isn't forced inline off the bat
+        function closeProductView() {
+            document.getElementById('product-view-modal').style.display = 'none';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
     </script>
     
-    <script src="js/sidebar.js"></script>
-    <script src="js/modal.js"></script>
-    <script src="js/modal_product.js"></script>
+    <script src="js/script.js"></script>
+    
 </body>
 </html>

@@ -46,14 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>New Password</title>
     <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .login-box { font-family: 'Google Sans', sans-serif; }
-        .form-control { width: 100%; padding: 10px; margin-bottom: 15px; box-sizing: border-box; font-family: 'Google Sans', sans-serif; }
-        .btn-success { width: 100%; padding: 10px; cursor: pointer; font-family: 'Google Sans', sans-serif; background-color: #28a745; color: white; border: none; border-radius: 4px;}
-        .error-msg { color: #d93025; margin-top: 10px; }
-        .success-msg { color: #28a745; font-weight: bold; padding: 20px; text-align: center;}
-    </style>
+    <link rel="stylesheet" href="css/forgot_password_style.css">
 </head>
 <body class="admin-body">
     <div class="login-container">
@@ -72,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST">
                     <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
                     <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
-                    <button type="submit" class="btn-success" style="border-radius: 6px;">Update Password</button>
+                    <button type="submit" class="btn-primary" style="border-radius: 6px;">Update Password</button>
                 </form>
 
                 <?php if ($error): ?>

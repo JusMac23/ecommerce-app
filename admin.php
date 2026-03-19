@@ -1,5 +1,5 @@
 <?php
-session_start(); // Ensure session is started at the very top
+session_start();
 
 require 'functions/functions.php';
 
@@ -28,27 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_admin'])) {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    // Check against admins table
     if (checkAdminLogin($username, $password)) {
         $_SESSION['admin_logged_in'] = true;
 
-        // --- FIXED: FETCH AND SAVE ADMIN ID ---
-        // We must get the ID so admin_account.php knows who is logged in
         if (!function_exists('getDB')) { 
             require_once __DIR__ . '/database/connection.php'; 
         }
         $conn = getDB();
         
-        // Fetch ID based on the username
         $stmt = $conn->prepare("SELECT id, username FROM admins WHERE username = ? LIMIT 1");
         $stmt->execute([$username]);
         $adminData = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($adminData) {
-            $_SESSION['admin_id'] = $adminData['id']; // <--- CRITICAL FIX
+            $_SESSION['admin_id'] = $adminData['id'];
             $_SESSION['admin_username'] = $adminData['username'];
         }
-        // --------------------------------------
 
         header("Location: admin.php");
         exit;
@@ -63,13 +58,10 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Check if logged in
 $isLoggedIn = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 
 // --- HANDLE ADMIN ACTIONS ---
 if ($isLoggedIn) {
-    
-    // 1. Add Product
     if (isset($_POST['add_product'])) {
         if(addProduct($_POST['name'], $_POST['description'], $_POST['price'], $_FILES['img'])) {
             $_SESSION['message'] = "Product added successfully!";
@@ -80,7 +72,6 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 2. Update Product
     if (isset($_POST['update_product'])) {
         $id = $_POST['product_id'];
         $name = $_POST['name'];
@@ -97,7 +88,6 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 3. Delete Product
     if (isset($_GET['delete_product'])) {
         deleteProduct($_GET['delete_product']);
         $_SESSION['message'] = "Product deleted successfully!";
@@ -105,7 +95,6 @@ if ($isLoggedIn) {
         exit;
     }
 
-    // 4. Update Order Status
     if (isset($_POST['update_status'])) {
         $orderId = $_POST['order_id'];
         $newStatus = $_POST['status'];
@@ -116,7 +105,6 @@ if ($isLoggedIn) {
     }
 }
 
-// Check for session messages
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
     unset($_SESSION['message']); 
@@ -131,7 +119,6 @@ if ($isLoggedIn) {
     $products = getProducts();
     $orders = getOrders();
 
-    // --- MESSAGE FETCHING ---
     if (!function_exists('getDB')) {
         require_once __DIR__ . '/database/connection.php'; 
     }
@@ -153,9 +140,7 @@ if ($isLoggedIn) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/edit_modal_product.css">
-    <link rel="stylesheet" href="css/messages.css">
+    <link rel="stylesheet" href="css/admin_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="admin-body">
@@ -163,25 +148,24 @@ if ($isLoggedIn) {
     <?php if (!$isLoggedIn): ?>
     <div id="login-view" class="login-container">
         <div class="login-box">
+            <?php if ($error): ?>
+                <div class="alert alert-error"><?= $error ?></div>
+            <?php endif; ?>
+            
             <h2>Admin Login</h2>
             <form method="POST">
                 <input type="hidden" name="login_admin" value="1">
                 <div class="form-group">
-                    <input type="text" name="username" placeholder="Username" style="font-family: 'Google Sans', sans-serif; width: 100%; padding: 10px; box-sizing: border-box;" required>
+                    <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="form-group">
-                    <input type="password" name="password" placeholder="Password" style="font-family: 'Google Sans', sans-serif; width: 100%; padding: 10px; box-sizing: border-box;" required>
+                    <input type="password" name="password" placeholder="Password" required>
                 </div>
-                <button type="submit" class="btn-confirm" style="width:100%; font-family: 'Google Sans', sans-serif; padding: 10px; cursor: pointer; margin-bottom:10px;">Login</button>
-                <a href="forgot_password.php" class="forgot-password-link">Forgot Password?</a>
+                <button type="submit" class="btn-confirm w-100" style="margin-bottom:10px;">Login</button>
+                <a href="forgot_password.php" class="auth-link">Forgot Password?</a>
             </form>
-
-            <?php if ($error): ?>
-                <p class="error-msg" style="color: red; margin-top: 10px;"><?= $error ?></p>
-            <?php endif; ?>
-            
             <br>
-            <a href="index.php" style="color:#666; font-size:0.9em; text-decoration: none; font-family: 'Google Sans', sans-serif;">← Back to Shop</a>
+            <a href="index.php" style="color:#666; font-size:0.9em; text-decoration: none;">← Back to Shop</a>
         </div>
     </div>
     <?php else: ?>
@@ -190,7 +174,7 @@ if ($isLoggedIn) {
         <nav class="admin-nav">
             <div class="logo">Admin Panel</div>
             
-            <div class="admin-hamburger">
+            <div class="index-hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -215,23 +199,21 @@ if ($isLoggedIn) {
                 <h3><i class="fa fa-plus-circle" style="margin-right: 10px; color: var(--primary);"></i>Add New Product</h3>
                 
                 <?php if(!empty($message)): ?>
-                    <div style="padding: 10px; margin-bottom: 10px; background: #e0f7fa; color: #006064; border-radius: 4px;">
+                    <div class="alert alert-success">
                         <?= htmlspecialchars($message) ?>
                     </div>
                 <?php endif; ?>
 
                 <form method="POST" class="form-group" enctype="multipart/form-data" style="display:flex; flex-direction: column;">
                     <input type="hidden" name="add_product" value="1">
-                    <input type="text" name="name" placeholder="Product Name" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family: Google sans;">
-                    <textarea name="description" placeholder="Product Description" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; min-height: 80px; margin-bottom: 10px; font-family: Google sans;"></textarea>
-                    <input type="number" name="price" step="0.01" placeholder="Price" required style="padding:10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-family: Google sans;">
-                    <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" name="name" placeholder="Product Name" required>
+                    <textarea name="description" placeholder="Product Description" rows="3" required></textarea>
+                    <input type="number" name="price" step="0.01" placeholder="Price" required>
+                    <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; background:#fff; margin-bottom: 15px;">
                         <label style="display:block; margin-bottom:5px; font-size: 0.9em; color:#666;">Product Image:</label>
-                        <input type="file" name="img" accept="image/*" required>
+                        <input type="file" name="img" accept="image/*" style="margin-bottom: 0; border:none; padding:0;" required>
                     </div>
-                    <button type="submit" class="btn-confirm" style="padding: 10px; margin-top: 15px; background-color: var(--primary, #007bff); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: Google sans;">
-                        Add Product
-                    </button>
+                    <button type="submit" class="btn-confirm w-100">Add Product</button>
                 </form>
             </div>
 
@@ -242,25 +224,21 @@ if ($isLoggedIn) {
                         <thead>
                             <tr>
                                 <th style="width: 80px;">Image</th>
-                                <th style="width: 20%;">Name</th>
-                                <th style="width: 35%;">Description</th>
-                                <th style="width: 15%;">Price</th>
-                                <th style="width: 15%;">Actions</th>
+                                <th style="min-width: 150px;">Name</th>
+                                <th style="min-width: 200px;">Description</th>
+                                <th>Price</th>
+                                <th style="min-width: 120px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($products as $p): ?>
                             <tr>
                                 <td><img src="<?= $p['img'] ?>" width="60" height="60" style="object-fit:cover; border-radius:4px;"></td>
-                                
                                 <td><strong><?= htmlspecialchars($p['name']) ?></strong></td>
-                                
                                 <td style="font-size: 0.9em; color: #555;">
                                     <?= strlen($p['description']) > 50 ? htmlspecialchars(substr($p['description'], 0, 50)) . '...' : htmlspecialchars($p['description']) ?>
                                 </td>
-                                
                                 <td style="font-weight: bold; color: var(--primary);">₱<?= number_format($p['price'], 2) ?></td>
-                                
                                 <td>
                                     <div class="action-btn-group">
                                         <button class="btn-edit" 
@@ -272,7 +250,6 @@ if ($isLoggedIn) {
                                             )">
                                             <i class="fa fa-edit"></i>
                                         </button>
-
                                         <a href="?delete_product=<?= $p['id'] ?>" class="btn-delete" onclick="return confirm('Delete this product?')">
                                             <i class="fa fa-trash"></i>
                                         </a>
@@ -292,10 +269,10 @@ if ($isLoggedIn) {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Customer Info</th>
-                                <th>Product</th>
+                                <th style="min-width: 150px;">Customer Info</th>
+                                <th style="min-width: 150px;">Product</th>
                                 <th>Current Status</th>
-                                <th>Update Status</th>
+                                <th style="min-width: 180px;">Update Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -312,17 +289,17 @@ if ($isLoggedIn) {
                                     <span class="status-badge status-<?= str_replace(' ', '-', $o['status']) ?>"><?= $o['status'] ?></span>
                                 </td>
                                 <td>
-                                    <form method="POST" class="status-form">
+                                    <form method="POST" class="status-form" style="display:flex; gap:5px;">
                                         <input type="hidden" name="update_status" value="1">
                                         <input type="hidden" name="order_id" value="<?= $o['id'] ?>">
-                                        <select name="status" class="status-select" style="font-family: Google sans;">
+                                        <select name="status" class="status-select" style="margin-bottom:0;">
                                             <option value="Pending" <?= $o['status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
                                             <option value="Confirmed" <?= $o['status'] == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
                                             <option value="For Delivery" <?= $o['status'] == 'For Delivery' ? 'selected' : '' ?>>For Delivery</option>
                                             <option value="Completed" <?= $o['status'] == 'Completed' ? 'selected' : '' ?>>Completed</option>
                                             <option value="Cancelled" <?= $o['status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                         </select>
-                                        <button type="submit" class="btn-update" style="width: 100%; font-family: Google sans;">Save</button>
+                                        <button type="submit" class="btn-update">Save</button>
                                     </form>
                                 </td>
                             </tr>
@@ -354,12 +331,12 @@ if ($isLoggedIn) {
                 <input type="number" id="edit-price" name="price" step="0.01" required>
                 
                 <label>Change Image (Optional)</label>
-                <input type="file" name="img" accept="image/*">
-                <small style="color:#666;">Leave blank to keep current image.</small>
+                <input type="file" name="img" accept="image/*" style="border:none; padding:0;">
+                <small style="color:#666; display:block; margin-top:-10px;">Leave blank to keep current image.</small>
                 
-                <div style="margin-top:20px; text-align:right;">
-                    <button type="button" onclick="closeEditModal()" style="padding:10px 15px; border:none; background:#ccc; cursor:pointer; border-radius:4px; margin-right:5px; font-family: Google sans">Cancel</button>
-                    <button type="submit" style="padding:10px 20px; border:none; background:var(--primary, #007bff); color:white; font-weight:bold; cursor:pointer; border-radius:4px; font-family: Google sans">Save Changes</button>
+                <div style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditModal()" style="padding:10px 15px; border:none; background:#ccc; cursor:pointer; border-radius:4px;">Cancel</button>
+                    <button type="submit" class="btn-confirm">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -391,13 +368,13 @@ if ($isLoggedIn) {
                                     <td><?php echo htmlspecialchars($row['id']); ?></td>
                                     <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                                     <td><?php echo htmlspecialchars($row['name']); ?></td>
-                                    <td><a href="mailto:<?php echo htmlspecialchars($row['email']); ?>"><?php echo htmlspecialchars($row['email']); ?></a></td>
+                                    <td><a href="mailto:<?php echo htmlspecialchars($row['email']); ?>" style="color:var(--primary);"><?php echo htmlspecialchars($row['email']); ?></a></td>
                                     <td><?php echo nl2br(htmlspecialchars($row['message'])); ?></td>
                                     <td>
                                         <button 
                                             onclick="markAsRead(<?php echo $row['id']; ?>)" 
-                                            style="padding:5px 15px; border:1px solid #007bff; background:transparent; color:gray; cursor:pointer; border-radius:25px; white-space:nowrap; font-family: 'Google Sans', sans-serif; transition: all 0.2s;"
-                                            onmouseover="this.style.background='#007bff'; this.style.color='white';"
+                                            style="padding:5px 15px; border:1px solid var(--primary); background:transparent; color:gray; cursor:pointer; border-radius:25px; white-space:nowrap; transition: all 0.2s;"
+                                            onmouseover="this.style.background='var(--primary)'; this.style.color='white';"
                                             onmouseout="this.style.background='transparent'; this.style.color='gray';"
                                         >
                                             <i class="fa fa-check"></i> Read
@@ -416,69 +393,64 @@ if ($isLoggedIn) {
         </div>
     </div>
 
-    <div class="footer">
-        <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
-    </div>
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; <?= date('Y') ?> Souvenir Shop. All rights reserved.</p>
+        </div>
+    </footer>
 
-    <script src="js/sidebar.js"></script>
-    <script src="js/edit_modal_product.js"></script>
-    
+    <script src="js/script.js"></script>
+
     <script>
         const msgModal = document.getElementById('messages-modal');
+        const editModal = document.getElementById('edit-modal');
         
         function openMessagesModal() {
-            msgModal.style.display = "block";
+            msgModal.style.display = "flex"; // Changed from block to flex for better centering
         }
         
         function closeMessagesModal() {
             msgModal.style.display = "none";
         }
+
+        function closeEditModal() {
+            if(editModal) editModal.style.display = "none";
+        }
         
-        // Handle closing when clicking outside the modal
         window.onclick = function(event) {
-            const editModal = document.getElementById('edit-modal');
             if (event.target == editModal) {
-                editModal.style.display = "none";
+                closeEditModal();
             }
             if (event.target == msgModal) {
-                msgModal.style.display = "none";
+                closeMessagesModal();
             }
         }
 
-        // --- NEW FUNCTION: Mark as Read & Update Badge ---
         function markAsRead(id) {
             if(!confirm('Mark this message as read? (This will delete it from view)')) return;
 
-            // Prepare form data for AJAX
             let formData = new FormData();
             formData.append('mark_read_id', id);
 
-            // Send request to same file (admin.php)
             fetch('admin.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.text())
             .then(data => {
-                // If the PHP block at the top returns "success"
                 if(data.trim() === 'success') {
-                    
-                    // 1. Remove the row from the table
                     const row = document.getElementById('msg-row-' + id);
-                    if(row) {
-                        row.remove(); // Removes the element completely
-                    }
+                    if(row) row.remove();
 
-                    // 2. Decrease the badge count
                     const badge = document.getElementById('msg-badge-count');
                     if(badge) {
                         let count = parseInt(badge.innerText);
                         count = count - 1;
                         
                         if(count <= 0) {
-                            badge.style.display = 'none'; // Hide badge if 0
+                            badge.style.display = 'none';
                         } else {
-                            badge.innerText = count; // Update text
+                            badge.innerText = count;
                         }
                     }
                 } else {

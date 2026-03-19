@@ -109,7 +109,7 @@ if (!$admin) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - Admin Panel</title>
-    <link rel="stylesheet" href="css/admin_account.css">
+    <link rel="stylesheet" href="css/account_info_style.css">
 </head>
 <body>
 
@@ -154,7 +154,7 @@ if (!$admin) {
             <label>Confirm New Password</label>
             <input type="password" name="confirm_password" required>
         </div>
-        <button type="submit" name="change_password" style="background-color: #007bff;">Change Password</button>
+        <button type="submit" name="change_password">Change Password</button>
     </form>
 </div>
 
