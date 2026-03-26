@@ -313,8 +313,8 @@ function sendOtpViaBrevo($user_email, $otp_code) {
             'content-type: application/json'
         ],
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_SSL_VERIFYHOST => false
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => true
     ]);
 
     $response = curl_exec($ch);
