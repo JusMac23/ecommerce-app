@@ -196,29 +196,20 @@ if ($isLoggedIn) {
         <div class="main-content" style="padding: 20px;">
             
             <div class="container admin-card">
-                <h3><i class="fa fa-plus-circle" style="margin-right: 10px; color: var(--primary);"></i>Add New Product</h3>
                 
                 <?php if(!empty($message)): ?>
-                    <div class="alert alert-success">
+                    <div class="alert alert-success" style="margin-bottom: 20px;">
                         <?= htmlspecialchars($message) ?>
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="form-group" enctype="multipart/form-data" style="display:flex; flex-direction: column;">
-                    <input type="hidden" name="add_product" value="1">
-                    <input type="text" name="name" placeholder="Product Name" required>
-                    <textarea name="description" placeholder="Product Description" rows="3" required></textarea>
-                    <input type="number" name="price" step="0.01" placeholder="Price" required>
-                    <div style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; background:#fff; margin-bottom: 15px;">
-                        <label style="display:block; margin-bottom:5px; font-size: 0.9em; color:#666;">Product Image:</label>
-                        <input type="file" name="img" accept="image/*" style="margin-bottom: 0; border:none; padding:0;" required>
-                    </div>
-                    <button type="submit" class="btn-confirm w-100">Add Product</button>
-                </form>
-            </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;"><i class="fa fa-tags" style="margin-right: 10px; color: var(--primary);"></i>Current Products</h3>
+                    <button onclick="openAddModal()" class="btn-confirm" style="padding: 10px 15px; border-radius: 4px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-plus-circle"></i> Add Product
+                    </button>
+                </div>
 
-            <div class="container admin-card">
-                <h3><i class="fa fa-tags" style="margin-right: 10px; color: var(--primary);"></i>Current Products</h3>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -309,6 +300,36 @@ if ($isLoggedIn) {
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAddModal()">×</span>
+            <h3 style="text-align:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px;">Add New Product</h3>
+            
+            <form method="POST" class="modal-form" enctype="multipart/form-data">
+                <input type="hidden" name="add_product" value="1">
+                
+                <label>Product Name</label>
+                <input type="text" name="name" placeholder="Enter product name" required>
+                
+                <label>Description</label>
+                <textarea name="description" placeholder="Enter product description" rows="4" required></textarea>
+                
+                <label>Price (₱)</label>
+                <input type="number" name="price" step="0.01" placeholder="0.00" required>
+                
+                <label>Product Image</label>
+                <div style="padding: 10px; border: 1px dashed #ccc; border-radius: 4px; background:#f9f9f9;">
+                    <input type="file" name="img" accept="image/*" style="border:none; padding:0; width:100%;" required>
+                </div>
+                
+                <div style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeAddModal()" style="padding:10px 15px; border:none; background:#ccc; cursor:pointer; border-radius:4px;">Cancel</button>
+                    <button type="submit" class="btn-confirm">Add Product</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -404,25 +425,37 @@ if ($isLoggedIn) {
     <script>
         const msgModal = document.getElementById('messages-modal');
         const editModal = document.getElementById('edit-modal');
+        const addModal = document.getElementById('add-modal');
         
+        // Modal toggles
         function openMessagesModal() {
-            msgModal.style.display = "flex"; // Changed from block to flex for better centering
+            msgModal.style.display = "flex"; 
         }
-        
         function closeMessagesModal() {
             msgModal.style.display = "none";
+        }
+
+        function openAddModal() {
+            addModal.style.display = "flex";
+        }
+        function closeAddModal() {
+            addModal.style.display = "none";
         }
 
         function closeEditModal() {
             if(editModal) editModal.style.display = "none";
         }
         
+        // Close modals when clicking outside of them
         window.onclick = function(event) {
             if (event.target == editModal) {
                 closeEditModal();
             }
             if (event.target == msgModal) {
                 closeMessagesModal();
+            }
+            if (event.target == addModal) {
+                closeAddModal();
             }
         }
 

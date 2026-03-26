@@ -334,7 +334,7 @@ if ($currentUser) {
                 <div class="alert alert-error" style="margin-bottom:15px;"><?= $error ?></div>
             <?php endif; ?>
 
-            <div id="login-form">
+            <div id="login-form" style="<?= ($action_type === 'register') ? 'display: none;' : 'display: block;' ?>">
                 <h3 style="text-align:center; margin-bottom:5px;">Customer Sign In</h3>
                 <form method="POST" action="index.php">
                     <input type="hidden" name="action" value="login">
@@ -352,7 +352,7 @@ if ($currentUser) {
                 <p style="margin-top:15px; text-align:center;">No account? <span class="auth-link" onclick="toggleAuth('register')">Register here</span></p>
             </div>
 
-            <div id="register-form" style="display: none;">
+            <div id="register-form" style="<?= ($action_type === 'register') ? 'display: block;' : 'display: none;' ?>">
                 <h3 style="text-align:center; margin-bottom:5px;">Create Customer Account</h3>
                 <form method="POST" action="index.php">
                     <input type="hidden" name="action" value="register">
@@ -388,25 +388,19 @@ if ($currentUser) {
         </div>
     </footer>
 
-    <script>
-        <?php if ($action_type === 'login'): ?>
-            openAuthModal('login');
-        <?php elseif ($action_type === 'register'): ?>
-            openAuthModal('register');
-        <?php elseif ($action_type === 'register_success'): ?>
-            openAuthModal('login');
-        <?php endif; ?>
-
-        // Ensures the modal display style isn't forced inline off the bat
-        function closeProductView() {
-            document.getElementById('product-view-modal').style.display = 'none';
-        }
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-    </script>
-    
     <script src="js/script.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if ($action_type === 'login'): ?>
+                openAuthModal('login');
+            <?php elseif ($action_type === 'register'): ?>
+                openAuthModal('register');
+            <?php elseif ($action_type === 'register_success'): ?>
+                openAuthModal('login');
+            <?php endif; ?>
+        });
+    </script>
     
 </body>
 </html>
