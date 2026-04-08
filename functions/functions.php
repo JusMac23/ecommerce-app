@@ -127,9 +127,14 @@ function registerUser($fname, $mname, $lname, $email, $phone, $password) {
         VALUES (?, ?, ?, ?, ?, ?)"
     );
 
-    return $stmt->execute([$fname, $mname, $lname, $email, $phone, $hash])
-        ? true
-        : "Registration failed.";
+    return $stmt->execute([
+        htmlspecialchars($fname), 
+        htmlspecialchars($mname), 
+        htmlspecialchars($lname), 
+        $email, 
+        htmlspecialchars($phone), 
+        $hash
+    ]) ? true : "Registration failed.";
 }
 
 function loginUser($email, $password) {
@@ -166,15 +171,25 @@ function addProduct($name, $description, $price, $file) {
     $uploadDir = 'uploads/';
     $imagePath = "https://via.placeholder.com/300";
 
+    // Prevent XSS attacks on display
+    $safeName = htmlspecialchars($name);
+    $safeDescription = htmlspecialchars($description);
+
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
 
     if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-        if (in_array($ext, $allowed)) {
+        // Secure MIME type checking
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+        if (in_array($ext, $allowedExts) && in_array($mime_type, $allowedMimes)) {
             $cleanName = preg_replace("/[^a-zA-Z0-9.]/", "", basename($file['name']));
             $newName = time() . '_' . $cleanName;
             $dest = $uploadDir . $newName;
@@ -189,23 +204,33 @@ function addProduct($name, $description, $price, $file) {
         "INSERT INTO products (name, description, price, img)
          VALUES (?, ?, ?, ?)"
     );
-    return $stmt->execute([$name, $description, (float)$price, $imagePath]);
+    return $stmt->execute([$safeName, $safeDescription, (float)$price, $imagePath]);
 }
 
 function updateProduct($id, $name, $description, $price, $file) {
     $pdo = getDB();
     $uploadDir = 'uploads/';
+    
+    // Prevent XSS attacks on display
+    $safeName = htmlspecialchars($name);
+    $safeDescription = htmlspecialchars($description);
 
     if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
-        $old = getProductById($id);
-        if ($old && file_exists($old['img']) && strpos($old['img'], 'uploads/') !== false) {
-            unlink($old['img']);
-        }
-
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        
+        // Secure MIME type checking
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-        if (in_array($ext, $allowed)) {
+        if (in_array($ext, $allowedExts) && in_array($mime_type, $allowedMimes)) {
+            $old = getProductById($id);
+            if ($old && file_exists($old['img']) && strpos($old['img'], 'uploads/') !== false) {
+                unlink($old['img']);
+            }
+
             $cleanName = preg_replace("/[^a-zA-Z0-9.]/", "", basename($file['name']));
             $newName = time() . '_' . $cleanName;
             $dest = $uploadDir . $newName;
@@ -214,7 +239,7 @@ function updateProduct($id, $name, $description, $price, $file) {
                 $stmt = $pdo->prepare(
                     "UPDATE products SET name=?, description=?, price=?, img=? WHERE id=?"
                 );
-                return $stmt->execute([$name, $description, (float)$price, $dest, $id]);
+                return $stmt->execute([$safeName, $safeDescription, (float)$price, $dest, $id]);
             }
         }
     }
@@ -222,7 +247,7 @@ function updateProduct($id, $name, $description, $price, $file) {
     $stmt = $pdo->prepare(
         "UPDATE products SET name=?, description=?, price=? WHERE id=?"
     );
-    return $stmt->execute([$name, $description, (float)$price, $id]);
+    return $stmt->execute([$safeName, $safeDescription, (float)$price, $id]);
 }
 
 function deleteProduct($id) {
@@ -314,7 +339,7 @@ function sendOtpViaBrevo($user_email, $otp_code) {
         ],
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_SSL_VERIFYHOST => true
+        CURLOPT_SSL_VERIFYHOST => 2 // 2 is the standard for checking the common name
     ]);
 
     $response = curl_exec($ch);
@@ -333,17 +358,19 @@ function sendOtpViaBrevo($user_email, $otp_code) {
 // 7. PASSWORD RESET
 // ==========================================
 
-function updatePasswordInDb($email_input, $plain_password) {
+function updatePasswordInDb($username_input, $plain_password) {
     $pdo = getDB();
 
     $hashed_password = password_hash($plain_password, PASSWORD_DEFAULT);
 
+    // Fixed logic: updating via username, not email, to match the admins table structure
     $stmt = $pdo->prepare(
         "UPDATE admins SET password = :pass WHERE username = :user"
     );
 
     return $stmt->execute([
         ':pass' => $hashed_password,
-        ':user' => $email_input
+        ':user' => $username_input
     ]);
 }
+?>

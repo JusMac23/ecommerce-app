@@ -346,10 +346,15 @@ if ($currentUser) {
                     <input type="password" name="password" required>
                     
                     <button type="submit" class="btn-confirm w-100" style="margin-bottom:10px;">Login</button>
+                    <a style="text-align: center; display: block;" href="forgot_password.php" class="auth-link">Forgot Password?</a>
                 </form>
 
-                <a href="admin.php" class="btn-block btn-admin-link" style="display: block; text-align: center; color: var(--primary); font-weight: 600;">Go to Admin Login</a>
                 <p style="margin-top:15px; text-align:center;">No account? <span class="auth-link" onclick="toggleAuth('register')">Register here</span></p>
+
+                <a href="admin.php" style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 10px; margin-top: 15px; border: 2px solid var(--primary, #007bff); border-radius: 8px; color: var(--primary, #007bff); font-size: 0.9rem; font-weight: 600; text-decoration: none;">
+                    <i class="fa fa-user-shield"></i> Admin Portal                
+                </a>
+
             </div>
 
             <div id="register-form" style="<?= ($action_type === 'register') ? 'display: block;' : 'display: none;' ?>">

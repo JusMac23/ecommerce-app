@@ -12,3 +12,4 @@ foreach ($env as $key => $value) {
         define($key, $value);
     }
 }
+?>

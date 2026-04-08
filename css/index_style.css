@@ -163,7 +163,8 @@ button:active { transform: scale(0.98); }
 .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .alert-success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
 .highlight-text { font-weight: bold; color: var(--primary); margin-bottom: 15px; display: block; }
-.auth-link { color: var(--primary); font-weight: 600; cursor: pointer; }
+.auth-link { color: var(--primary); font-weight: 600; cursor: pointer; display: inline-block; margin-top: 10px; }
+.auth-link:hover { text-decoration: underline; }
 
 /* =========================================
    9. PRODUCT EXPAND MODAL
